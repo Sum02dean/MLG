@@ -3,7 +3,7 @@ Machine Learning in Genomics Course ETH.
 
 ![APM](https://img.shields.io/apm/l/vim-mode) 
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
-<img src="gnomes.png" width="450">
+<img src="amoeba.png" width="450">
 
 ## Submissions: 
 https://project.ml4g.ethz.ch
