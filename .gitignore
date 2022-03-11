@@ -132,4 +132,5 @@ dmypy.json
 ._.DS_Store/
 .DS_Store/
 ._.*/
+._*/
 
