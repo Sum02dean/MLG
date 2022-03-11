@@ -131,3 +131,5 @@ dmypy.json
 # Annoying files
 ._.DS_Store/
 .DS_Store/
+._.*/
+
