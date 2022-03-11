@@ -128,12 +128,14 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Annoying mac/win transfer files
-._.DS_Store/
-.DS_Store/
-._*/
+# Annoying mac/win transfer files from parent
+._.*/
 .DS*/
-*/._*
+._*/
+#
+
+Nested files
+*/.DS*
 */.*
 
 
