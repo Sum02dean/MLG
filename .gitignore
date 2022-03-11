@@ -136,6 +136,6 @@ dmypy.json
 
 Nested files
 */.DS*
-*/.*
+*/._*
 
 
