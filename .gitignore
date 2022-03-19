@@ -138,4 +138,5 @@ Nested files
 */.DS*
 */._*
 
-
+# ingore raw input data 
+data/
