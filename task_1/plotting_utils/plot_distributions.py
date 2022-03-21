@@ -59,5 +59,5 @@ def plot_distributions(x1, x2, min_v=-300, max_v=800, balance=True, names=['test
 
 
 # Plot distributions
-# plot_distribution(x1=df_val.gex, x2=df_train.gex, balance=True,
+# plot_distributions(x1=df_val.gex, x2=df_train.gex, balance=True,
 #                   names=['test', 'train'])
