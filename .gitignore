@@ -138,9 +138,8 @@ dmypy.json
 ._*/
 #
 
-# Nested files
+Nested files
 */.DS*
 */._*
 
-# Task1
-task_1/data/
+
