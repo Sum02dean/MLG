@@ -33,7 +33,7 @@ def plot_distribution(x1, x2, min_v=-300, max_v=800, balance=True, names=['test'
 
         except ValueError as e:
             print(e)
-            print('Make sure x1 has largest number of samples!')
+            print('Make sure x2 has largest number of samples!')
             return None
 
     # Plot KDE
