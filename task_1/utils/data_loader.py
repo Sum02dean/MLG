@@ -44,7 +44,6 @@ def load_genes_by_chr(chromosomes: list) -> pd.DataFrame:
     :param chromosomes: list of chromosomes to filter genes by
     :return: genes from specified chromosomes as a DataFrame
     """
-    # load by chromosomes when using k fold cross validation
     all_genes = load_train_genes()
     return all_genes[all_genes.chr.isin(chromosomes)]
 
