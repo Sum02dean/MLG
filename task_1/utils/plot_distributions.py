@@ -12,11 +12,11 @@ def plot_distribution(x1, x2, min_v=-300, max_v=800, balance=True, names=['test'
     :param x1: variable 1 (smallest number of samples - if balance = True)
     :type x1: pandas.core.frame.DataFrame 
 
-    :param x2: variable 2  (largest number of samples - if balance = True)
+    :param x2: variable 2  (lagestest number of samples - if balance = True)
     :type x2: pandas.core.frame.DataFrame
 
     :param names: list containing strings of dataset names (for plotting) in same order provided
-    :type x2: list
+    :type names: list
 
     :param balace: to balance the sets based on x1 dimension (dim 0), defaults to True
     :type balace: bool, optional
@@ -31,7 +31,7 @@ def plot_distribution(x1, x2, min_v=-300, max_v=800, balance=True, names=['test'
             n_samples = np.shape(x1)[0]
             x2 = x2.sample(n_samples)
 
-        except ValueError as e:
+        except AssertionError as e:
             print(e)
             print('Make sure x2 has largest number of samples!')
             return None
