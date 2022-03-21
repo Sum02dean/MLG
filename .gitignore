@@ -139,4 +139,4 @@ Nested files
 */._*
 
 # ingore raw input data 
-data/
+task_1/data/
