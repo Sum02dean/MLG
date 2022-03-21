@@ -67,5 +67,6 @@ def ridge_regression():
     fit_predict(ridge_model, parameters)
 
 
-# run to fit and generate submission file
-ridge_regression()
+if __name__ == '__main__':
+    # run to fit and generate submission file
+    ridge_regression()
