@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_distribution(x1, x2, min_v=-300, max_v=800, balance=True, names=['test', 'train']):
+def plot_distributions(x1, x2, min_v=-300, max_v=800, balance=True, names=['test', 'train']):
     """Plots the distribution between two variables of interest, x1 and x2.
 
     :param x1: variable 1 (smallest number of samples - if balance = True)
@@ -38,9 +38,9 @@ def plot_distribution(x1, x2, min_v=-300, max_v=800, balance=True, names=['test'
 
     # Plot KDE
     fig, ax = plt.subplots()
-    sns.kdeplot(x1['gex'].values, label=names[0])
-    sns.kdeplot(x2['gex'].values, label=names[1])
-    plt.title("GEX Distributions ({}-{})".format(names[0], names[1]))
+    sns.kdeplot(x1.values, label=names[0])
+    sns.kdeplot(x2.values, label=names[1])
+    plt.title("Data Distributions ({}-{})".format(names[0], names[1]))
     plt.xlim([min_v, max_v])
     ax.legend()
     plt.show()
@@ -59,5 +59,5 @@ def plot_distribution(x1, x2, min_v=-300, max_v=800, balance=True, names=['test'
 
 
 # Plot distributions
-# plot_distribution(x1=df_val, x2=df_train, balance=True,
+# plot_distribution(x1=df_val.gex, x2=df_train.gex, balance=True,
 #                   names=['test', 'train'])
