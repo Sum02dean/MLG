@@ -26,3 +26,5 @@ pip install -r requirements.txt
 
 ## Data
 The project data should be unzipped into `/task_1/data`. For example, the X1 dataset train info should be available at `/task_1/data/CAGE-train/X1_train_info.tsv`.
+
+We're using the human reference genome version hg38. It should be downloaded into the folder `data` from `https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa`.
