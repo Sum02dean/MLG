@@ -12,7 +12,7 @@ def plot_distribution(x1, x2, min_v=-300, max_v=800, balance=True, names=['test'
     :param x1: variable 1 (smallest number of samples - if balance = True)
     :type x1: pandas.core.frame.DataFrame 
 
-    :param x2: variable 2  (lagestest number of samples - if balance = True)
+    :param x2: variable 2  (largest number of samples - if balance = True)
     :type x2: pandas.core.frame.DataFrame
 
     :param names: list containing strings of dataset names (for plotting) in same order provided
