@@ -22,11 +22,24 @@ VALUE_TYPES = ['mean', 'max', 'min', 'coverage', 'std']
 
 def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str = 'mean',
                 histones: list[HistoneMod] = BW_MODS.keys()):
+    """
+    Get values from given histone marks for bigwig files.
+
+    :param cell_line: cell line in [1, 2, 3]
+    :param chr: chromosome number in [1..22]
+    :param start: start index in given chromosome
+    :param stop: stop index in given chromosome (included in stats!)
+    :param value_type: value type over given interval (in ['mean', 'max', 'min', 'coverage', 'std'])
+    :param histones: list of bigwig histone modification to calculate
+    :return: averaged (by value type) value for given histone modifications from bigwig files
+    """
+    assert cell_line in [1, 2, 3]
     assert value_type in VALUE_TYPES
+    assert all(histone in BW_MODS for histone in histones)
 
     stats = []
     for histone in histones:
-        filename = BW_MODS[histone][cell_line]
+        filename = BW_MODS[histone][cell_line - 1]
         bw = pyBigWig.open(f'../data/{histone.name}-bigwig/{filename}')
         stat = bw.stats(f'chr{chr}', start, stop, type=value_type)
         # TODO: there is also an option to get a list of values for multiple bins!
