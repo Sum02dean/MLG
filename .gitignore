@@ -144,3 +144,4 @@ dmypy.json
 
 # Task1
 task_1/data/
+../task_1/utils/__pycache__/

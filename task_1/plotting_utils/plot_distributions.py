@@ -23,18 +23,15 @@ def plot_distributions(x1, x2, min_v=-300, max_v=800, balance=True, names=['test
     """
 
     if balance:
-        try:
-            # Check length of x1 <= x2
-            assert(x1.shape[0] <= x2.shape[0])
+        # Balance data
+        n_x1 = np.shape(x1)[0]
+        n_x2 = np.shape(x2)[0]
 
-            # Balance data
-            n_samples = np.shape(x1)[0]
-            x2 = x2.sample(n_samples)
-
-        except AssertionError as e:
-            print(e)
-            print('Make sure x2 has largest number of samples!')
-            return None
+        # Balance by smallest set
+        if n_x1 <= n_x2:
+            x2 = x2.sample(n_x1)
+        else:
+            x1 = x1.sample(n_x2)
 
     # Plot KDE
     fig, ax = plt.subplots()
@@ -44,20 +41,3 @@ def plot_distributions(x1, x2, min_v=-300, max_v=800, balance=True, names=['test
     plt.xlim([min_v, max_v])
     ax.legend()
     plt.show()
-
-
-# Example:
-
-# Read in the data
-# data_root = 'PATH/TO/task_1/data/CAGE-train'
-# files_train = glob.glob(os.path.join(data_root, '*train_y.tsv'))
-# files_val = glob.glob(os.path.join(data_root, '*val_y.tsv'))
-
-# # Get train and test
-# df_train = pd.concat([pd.read_csv(x, sep='\t') for x in files_train])
-# df_val = pd.concat([pd.read_csv(x, sep='\t') for x in files_val])
-
-
-# Plot distributions
-# plot_distributions(x1=df_val.gex, x2=df_train.gex, balance=True,
-#                   names=['test', 'train'])
