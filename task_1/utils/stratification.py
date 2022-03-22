@@ -84,7 +84,7 @@ def chromosome_split(cell_line=None, test_size=0.3):
         groups = np.array(df.chr)
 
     # Collect disjoin sets
-    gss = GroupShuffleSplit(n_splits=1, train_size=test_size)
+    gss = GroupShuffleSplit(n_splits=1, train_size=1 - test_size)
     for train_idx, test_idx in gss.split(X=df, y=None, groups=groups):
         y_train = df.iloc[train_idx]
         y_test = df.iloc[test_idx]
