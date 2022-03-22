@@ -14,9 +14,11 @@ class HistoneMod(Enum):
 
 
 HISTONE_MODS = list(HistoneMod.__members__.keys())
-BED_MODS = HISTONE_MODS
-BW_MODS: dict[HistoneMod, list[str]] = {HistoneMod.DNase: ['X1.bw', 'X2.bw', 'X3.bigwig'],
-                                        HistoneMod.H3K27ac: ['X1.bigwig', 'X2.bw', 'X3.bw']}
+BED_MODS: dict[HistoneMod, list[str]] = {histone: ['X1.bed', 'X2.bed', 'X3.bed'] for histone in HistoneMod}
+BW_MODS: dict[HistoneMod, list[str]] = {
+    HistoneMod.DNase: ['X1.bw', 'X2.bw', 'X3.bigwig'],
+    HistoneMod.H3K27ac: ['X1.bigwig', 'X2.bw', 'X3.bw']
+}
 VALUE_TYPES = ['mean', 'max', 'min', 'coverage', 'std']
 
 
@@ -34,6 +36,7 @@ def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str
     :return: averaged (by value type) value for given histone modifications from bigwig files
     """
     assert cell_line in [1, 2, 3]
+    assert chr in range(1, 23)
     assert value_type in VALUE_TYPES
     assert all(histone in BW_MODS for histone in histones)
 
@@ -43,6 +46,7 @@ def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str
         bw = pyBigWig.open(f'../data/{histone.name}-bigwig/{filename}')
         stat = bw.stats(f'chr{chr}', start, stop, type=value_type)
         # TODO: there is also an option to get a list of values for multiple bins!
+        bw.close()
         stats += stat
 
     return stats
@@ -50,3 +54,4 @@ def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str
 
 if __name__ == '__main__':
     print(get_bw_data(1, 1, 10000, 10100))
+    # print(get_bed_data(1, 1, 10000, 10100))
