@@ -157,7 +157,8 @@ def plot_chr_similartiy(show=True):
     if show:
         ax = df_sim.plot.barh(figsize=(8, 8))
         ax.invert_yaxis()
-        plt.title(" Chromosome similarity (euclidean) for cell-lines A and B")
+        plt.title(
+            " Chromosome similarity distance (euclidean) for cell-lines A and B")
         plt.show()
 
     return df_sim

@@ -2,12 +2,8 @@ import os
 
 import pandas as pd
 
-<<<<<<< HEAD
 TRAIN_INFO = {1: ['X1_train_info', 'X1_val_info'],
               2: ['X2_train_info', 'X2_val_info']}
-=======
-TRAIN_INFO = {1: ['X1_train_info', 'X1_val_info'], 2: ['X2_train_info', 'X2_val_info']}
->>>>>>> origin/main
 TRAIN_LABELS = {1: ['X1_train_y', 'X1_val_y'], 2: ['X2_train_y', 'X2_val_y']}
 
 
