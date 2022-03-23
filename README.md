@@ -25,9 +25,9 @@ pip install -r requirements.txt
 ```
 
 ## Data
-The project data should be unzipped into `/task_1/data`. For example, the X1 dataset train info should be available at `/task_1/data/CAGE-train/X1_train_info.tsv`.
+The [project data](https://polybox.ethz.ch/index.php/s/iY6d8qbMMiy4dQh) should be unzipped into `/task_1/data`. For example, the X1 dataset train info should be available at `/task_1/data/CAGE-train/X1_train_info.tsv`.
 
 We're using the human reference genome version hg38. It should be downloaded into the folder `data` from `https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg38/hg38.fa`.
 
-## Data
-https://polybox.ethz.ch/index.php/s/iY6d8qbMMiy4dQh
+## Dependencies
+- Histone modification data processing with [pyBigWig](https://github.com/deeptools/pyBigWig).
