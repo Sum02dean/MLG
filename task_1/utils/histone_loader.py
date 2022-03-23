@@ -1,29 +1,25 @@
-from enum import Enum, auto
+import os.path
 
 import pyBigWig
 
-
-class HistoneMod(Enum):
-    DNase = auto()
-    H3K4me1 = auto()
-    H3K4me3 = auto()
-    H3K9me3 = auto()
-    H3K27ac = auto()
-    H3K27me3 = auto()
-    H3K36me3 = auto()
-
-
-HISTONE_MODS = list(HistoneMod.__members__.keys())
-BED_MODS: dict[HistoneMod, list[str]] = {histone: ['X1.bed', 'X2.bed', 'X3.bed'] for histone in HistoneMod}
-BW_MODS: dict[HistoneMod, list[str]] = {
-    HistoneMod.DNase: ['X1.bw', 'X2.bw', 'X3.bigwig'],
-    HistoneMod.H3K27ac: ['X1.bigwig', 'X2.bw', 'X3.bw']
-}
+HISTONE_MODS: list[str] = ['DNase', 'H3K4me1', 'H3K4me3', 'H3K9me3', 'H3K27ac', 'H3K27me3', 'H3K36me3']
 VALUE_TYPES = ['mean', 'max', 'min', 'coverage', 'std']
 
 
-def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str = 'mean',
-                histones: list[HistoneMod] = BW_MODS.keys()):
+def get_histone_file(histone: str, cell_line: int) -> str:
+    """
+    Find the histone modification data for a given histone modification and cell line with the correct bigwig extension.
+
+    :param histone: histone file name (directory name where exists bigwig file for all cell lines)
+    :param cell_line: cell line
+    :return: path to histone modification bigwig file
+    """
+    path = f'../data/{histone}-bigwig/X{cell_line}'
+    file_extensions = ['.bw', '.bigwig']
+    return list(filter(lambda p: os.path.exists(p), [path + ext for ext in file_extensions]))[0]
+
+
+def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str = 'mean', histones=None):
     """
     Get values from given histone marks for bigwig files.
 
@@ -35,15 +31,17 @@ def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str
     :param histones: list of bigwig histone modification to calculate
     :return: averaged (by value type) value for given histone modifications from bigwig files
     """
+    if histones is None:
+        histones = HISTONE_MODS
     assert cell_line in [1, 2, 3]
     assert chr in range(1, 23)
     assert value_type in VALUE_TYPES
-    assert all(histone in BW_MODS for histone in histones)
+    assert all(histone in HISTONE_MODS for histone in histones)
 
     stats = []
     for histone in histones:
-        filename = BW_MODS[histone][cell_line - 1]
-        bw = pyBigWig.open(f'../data/{histone.name}-bigwig/{filename}')
+        filename = get_histone_file(histone, cell_line)
+        bw = pyBigWig.open(filename)
         stat = bw.stats(f'chr{chr}', start, stop, type=value_type)
         # TODO: there is also an option to get a list of values for multiple bins!
         bw.close()
@@ -53,5 +51,5 @@ def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str
 
 
 if __name__ == '__main__':
-    print(get_bw_data(1, 1, 10000, 10100))
-    # print(get_bed_data(1, 1, 10000, 10100))
+    for cell_line in [1, 2, 3]:
+        print(get_bw_data(cell_line, 1, 10000, 10100))
