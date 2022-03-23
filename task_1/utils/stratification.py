@@ -59,7 +59,7 @@ def chromosome_split(cell_line=None, test_size=0.3):
     :param cell_line: 
         if None: Mutually exlsive splits will be made with cell-line 1 & 2. Cell-line mixing allowed
         if 1: mutually exclusive chr splits will be made across cell-line 1. Celll-line mixing disallowed,
-        if 2: mutually exclusive chr splits will be made across cell-line 2 . Cell-line micing disallowed,
+        if 2: mutually exclusive chr splits will be made across cell-line 2 . Cell-line mixing disallowed,
         defaults to None
     :type cell_line: str or None, optional
 
