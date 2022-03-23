@@ -95,7 +95,7 @@ def plot_hvg(chromosome='1', n=20, show=True, figsize=(8, 8)):
     # Create DataFrame
     dist_df = pd.DataFrame(
         {'gene_name': gene_names,
-         'euclidean_dist': dist_scaled})
+         'euclidean_dist': dist})
 
     # Set index to gene names
     dist_df.set_index('gene_name', inplace=True, drop=True)
@@ -130,7 +130,7 @@ def plot_chr_similartiy(show=True):
     cols_to_dicard = [x for x in df.columns if x not in cols_to_keep]
 
     # Split into cell-lines
-    df = df.sort_values(by='gene_name', ascending=True)
+    df = df.sort_values(by='gene_name', ascending=False)
     x1 = df[(df.cell_line == 1)]
     x2 = df[(df.cell_line == 2)]
 
@@ -149,9 +149,9 @@ def plot_chr_similartiy(show=True):
         chr_sim.append(dist)
 
     # Format dataframe
-    df_sim = pd.DataFrame({'chr': train_chr, 'similarity': chr_sim})
+    df_sim = pd.DataFrame({'chr': train_chr, 'euclidean_dist': chr_sim})
     df_sim['chr'] = df_sim['chr'].astype('int')
-    df_sim = df_sim.sort_values(by='chr', ascending=False)
+    df_sim = df_sim.sort_values(by='euclidean_dist', ascending=False)
     df_sim.set_index(['chr'], inplace=True, drop=True)
 
     if show:

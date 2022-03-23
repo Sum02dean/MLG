@@ -57,9 +57,9 @@ def chromosome_split(cell_line=None, test_size=0.3):
     """Generates splits between chromosomes
 
     :param cell_line: 
-        if None: Mutually exlsive splits will be made with cell-line 1 & 2 mixing allowed
-        if 1: mutually exclusive chr splits will be made across cell-line 1 disallowed,
-        if 2: mutually exclusive chr splits will be made across cell-line 2 disallowed,
+        if None: Mutually exlsive splits will be made with cell-line 1 & 2. Cell-line mixing allowed
+        if 1: mutually exclusive chr splits will be made across cell-line 1. Celll-line mixing disallowed,
+        if 2: mutually exclusive chr splits will be made across cell-line 2 . Cell-line disallowed,
         defaults to None
     :type cell_line: str or None, optional
 
