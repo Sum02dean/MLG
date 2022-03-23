@@ -1,6 +1,9 @@
+import os
 from enum import Enum, auto
 
+import pandas as pd
 import pyBigWig
+import pybedtools
 
 
 class HistoneMod(Enum):
@@ -13,6 +16,8 @@ class HistoneMod(Enum):
     H3K36me3 = auto()
 
 
+BED_NARROW_PEAK_COLUMNS = ['chr', 'start', 'end', 'name', 'score', 'strand', 'signal_value', 'p_value', 'q_value', 'peak']
+# NB! end is not part of interval
 HISTONE_MODS = list(HistoneMod.__members__.keys())
 BED_MODS: dict[HistoneMod, list[str]] = {histone: ['X1.bed', 'X2.bed', 'X3.bed'] for histone in HistoneMod}
 BW_MODS: dict[HistoneMod, list[str]] = {
@@ -20,6 +25,48 @@ BW_MODS: dict[HistoneMod, list[str]] = {
     HistoneMod.H3K27ac: ['X1.bigwig', 'X2.bw', 'X3.bw']
 }
 VALUE_TYPES = ['mean', 'max', 'min', 'coverage', 'std']
+
+
+def load_bed_df(histone_mod: HistoneMod, filename: str):
+    return pd.read_csv(f'..{os.sep}data{os.sep}{histone_mod.name}-bed{os.sep}{filename}', sep='\t', header=None,
+                       names=BED_NARROW_PEAK_COLUMNS)
+
+
+def get_bed_data(cell_line: int, chr: int, start: int, stop: int, value_type: str = 'mean',
+                 histones: list[HistoneMod] = BED_MODS.keys()):
+    """
+
+    NB! end in bed line is not included in interval
+    NB! assumes no overlapping intervals
+
+    :param cell_line:
+    :param chr:
+    :param start:
+    :param stop:
+    :param value_type:
+    :param histones:
+    """
+    assert cell_line in [1, 2, 3]
+    assert chr in range(1, 23)
+    assert value_type in VALUE_TYPES
+    assert all(histone in BED_MODS for histone in histones)
+
+    stats = []
+    for histone in histones:
+        filename = BED_MODS[histone][cell_line - 1]
+        bed_df = load_bed_df(histone, filename)
+        bed_df = bed_df[bed_df.chr == f'chr{chr}']
+        df = bed_df.sort_values('start')
+        prev_end = 0
+        for index, line in df.iterrows():
+            assert line.start >= prev_end
+            prev_end = line.end
+        bed_df = bed_df[bed_df.end > start]
+        bed_df = bed_df[bed_df.start <= stop]
+
+        print(bed_df.head())
+
+    pass
 
 
 def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str = 'mean',
