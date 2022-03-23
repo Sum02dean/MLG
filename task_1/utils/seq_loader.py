@@ -43,7 +43,7 @@ def get_sequence(chromosome_nr: int, start: int, stop: int, is_reverse: bool) ->
     seq = GENOME.sequence({'chr': f'chr{chromosome_nr}', 'start': start, 'stop': stop})
     seq = clean_seq(seq)
     if is_reverse:
-        return "".join(COMPLEMENT[base] for base in reversed(seq))
+        return ''.join(COMPLEMENT[base] for base in reversed(seq))
     return seq
 
 
