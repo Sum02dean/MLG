@@ -28,7 +28,7 @@ def load_train_genes_for_cell_line(cell_line: int) -> pd.DataFrame:
     gene_info['gex'] = gene_exp.gex
 
     # remove chr prefix from entries
-    gene_info['chr'] = gene_info['chr'].map(lambda x: x.lstrip('chr'))
+    gene_info['chr'] = gene_info['chr'].map(lambda x: int(x.lstrip('chr')))
 
     return gene_info
 
