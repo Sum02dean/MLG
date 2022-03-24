@@ -16,7 +16,6 @@ params = {
     'bootstrap': [True],
 }
 
-
 for stratifier in [random_splits, chromosome_split, cell_line_splits]:
 
     # Load models

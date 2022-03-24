@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-from task_1.plotting_utils.plotting_metrics import euclidean_distance
-from task_1.utils.data_loader import *
+from plotting_utils.plotting_metrics import euclidean_distance
+from utils.data_loader import *
 
 
 def plot_kde(x1, x2, min_v=-300, max_v=800, balance=True, names=['test', 'train']):
