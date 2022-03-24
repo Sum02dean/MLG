@@ -15,6 +15,7 @@ param_dist = {
     "criterion": ["gini", "entropy"]
 }
 
+# Get genes
 train_genes, test_genes = random_splits()
 
 train_dataloader = torch.utils.data.DataLoader(
