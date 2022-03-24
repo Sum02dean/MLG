@@ -2,12 +2,12 @@ import os
 import sys
 import pandas as pd
 
-from utils.data_loader import load_train_genes_for_cell_line
+
+print(os.getcwd())
+from data_loader import load_train_genes_for_cell_line
 
 
 data_small_folder = "data_small/"
-
-print(os.getcwd())
 
 
 def created_gct_file_train_plus_val() -> pd.DataFrame:
