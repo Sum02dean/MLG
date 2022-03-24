@@ -2,11 +2,12 @@ import numpy
 import numpy as np
 import pandas as pd
 import torch
+from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset
-from sklearn.model_selection import KFold
+from tqdm import tqdm
 
-from histone_loader import HISTONE_MODS, get_bw_data
 from data_loader import get_train_chr, filter_genes_by_chr, load_train_genes
+from histone_loader import HISTONE_MODS, get_bw_data
 
 
 class SeqHistDataset(Dataset):
@@ -29,36 +30,30 @@ class SeqHistDataset(Dataset):
     def __len__(self) -> int:
         return len(self.genes)
 
-    def __getitem__(self, idx) -> np.ndarray:
-        if torch.is_tensor(idx):
-            idx = idx.tolist()
-        batch_genes = self.genes.iloc[idx, :]
-        features = []
-        for _, gene in batch_genes.iterrows():
-            start = gene.TSS_start - self.left_flank_size
-            end = gene.TSS_start + self.right_flank_size - 1  # marks last nucleotide index
+    def __getitem__(self, idx) -> (np.ndarray, np.ndarray):
+        gene = self.genes.iloc[idx, :]
+        start = gene.TSS_start - self.left_flank_size
+        end = gene.TSS_start + self.right_flank_size - 1  # marks last nucleotide index
 
-            features.append(
-                get_bw_data(gene.cell_line, gene.chr, start, end, histones=self.histone_mods, value_type='mean',
-                            n_bins=self.n_bins))
-        features = np.array(features)
-        print(features.shape)
-        return features
+        features = get_bw_data(gene.cell_line, gene.chr, start, end, histones=self.histone_mods, value_type='mean', n_bins=self.n_bins)
+        return np.array(features), gene.gex
+
+
+def example_train_valid_split():
+    chr = numpy.array(get_train_chr())
+    chr_train, chr_valid = train_test_split(chr, test_size=0.2, random_state=42)
+
+    all_genes = load_train_genes()
+    train_genes = filter_genes_by_chr(all_genes, chr_train)
+    train_dataloader = torch.utils.data.DataLoader(SeqHistDataset(train_genes), shuffle=True, batch_size=16)
+    valid_genes = filter_genes_by_chr(all_genes, chr_valid)
+    valid_dataloader = torch.utils.data.DataLoader(SeqHistDataset(valid_genes), shuffle=True, batch_size=16)
+
+    for gene_features, gex in tqdm(train_dataloader):
+        # print(gene_features.shape, gex.shape)
+        # ...
+        pass
 
 
 if __name__ == '__main__':
-    num_folds = 6
-    k_fold = KFold(n_splits=num_folds, shuffle=True, random_state=42)
-
-    chr = numpy.array(get_train_chr())
-    all_genes = load_train_genes()
-    for train_index, val_index in k_fold.split(chr):
-        chr_train, chr_valid = chr[train_index], chr[val_index]
-
-        genes_train = filter_genes_by_chr(all_genes, chr_train)
-        genes_valid = filter_genes_by_chr(all_genes, chr_valid)
-
-        dataset = SeqHistDataset(genes_train)
-
-        for i in range(0, len(genes_train) - 16, 16):
-            dataset.__getitem__(list(range(i, i + 16)))
+    example_train_valid_split()
