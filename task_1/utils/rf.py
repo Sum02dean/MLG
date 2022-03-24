@@ -10,6 +10,7 @@ from tqdm import tqdm
 from scipy import stats
 
 
+# Run Script
 params = {
     'max_depth': [20],
     'bootstrap': [True],
@@ -45,11 +46,11 @@ for stratifier in [random_splits, chromosome_split, cell_line_splits]:
     n_genes_test, _, _ = x_test.shape
     x_test = x_test.reshape(n_genes_test, n_features * n_bins)
 
-    # Fit train
+    # Fit train data
     clf.fit(x_train, y_train)
 
     # Predict test
     preds = clf.predict(x_test)
     test_score = stats.spearmanr(preds, y_test)
     print('Spearman Correlation score: {}'.format(test_score))
-print('Finished without errors.')
+print('Finished on self defined tests without errors.')
