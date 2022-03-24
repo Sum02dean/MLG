@@ -1,12 +1,9 @@
-import os
-import sys
-sys.path.append('../')
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from utils.data_loader import *
+import pandas as pd
 from sklearn.model_selection import GroupShuffleSplit
 from sklearn.model_selection import train_test_split
+
+from task_1.utils.data_loader import load_train_genes
 
 
 def random_splits():
@@ -18,8 +15,7 @@ def random_splits():
     """
 
     # Pull in data
-    train_chr = get_train_chr()
-    df = load_genes_by_chr(train_chr)
+    df = load_train_genes()
     df.sort_values(by='gene_name', ascending=True, inplace=True)
 
     # Split on cell lines stratified across chr and
@@ -44,8 +40,7 @@ def cell_line_splits():
     """
 
     # Pull in data
-    train_chr = get_train_chr()
-    df = load_genes_by_chr(train_chr)
+    df = load_train_genes()
 
     # Split between cell lines
     x1 = df[(df.cell_line == 1)]
@@ -71,10 +66,9 @@ def chromosome_split(cell_line=None, test_size=0.3):
     """
 
     # Pull in data
-    train_chr = get_train_chr()
-    df = load_genes_by_chr(train_chr)
+    df = load_train_genes()
 
-    if cell_line == None:
+    if cell_line is None:
         # Allow mixing between cell-lines
         groups = np.array(df.chr)
 
@@ -83,10 +77,9 @@ def chromosome_split(cell_line=None, test_size=0.3):
         df = df[df.cell_line == cell_line]
         groups = np.array(df.chr)
 
-    # Collect disjoin sets
-    gss = GroupShuffleSplit(n_splits=1, train_size=1 - test_size)
+    # Collect disjoint sets
+    gss = GroupShuffleSplit(n_splits=1, train_size=1 - test_size, random_state=42)
     for train_idx, test_idx in gss.split(X=df, y=None, groups=groups):
         y_train = df.iloc[train_idx]
         y_test = df.iloc[test_idx]
-
-    return y_train, y_test
+        return y_train, y_test

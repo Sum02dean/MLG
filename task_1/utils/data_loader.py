@@ -8,7 +8,15 @@ TRAIN_LABELS = {1: ['X1_train_y', 'X1_val_y'], 2: ['X2_train_y', 'X2_val_y']}
 
 
 def load_info(filename: str) -> pd.DataFrame:
-    return pd.read_csv(f'data{os.sep}CAGE-train{os.sep}{filename}.tsv', sep='\t')
+    file = f'data{os.sep}CAGE-train{os.sep}{filename}.tsv'
+    if not os.path.exists(file):
+        file = f'..{os.sep}' + file
+    df = pd.read_csv(file, sep='\t')
+
+    if 'chr' in df.columns:
+        # chr as int
+        df['chr'] = df['chr'].map(lambda x: int(x.lstrip('chr')))
+    return df
 
 
 def load_train_genes_for_cell_line(cell_line: int) -> pd.DataFrame:
@@ -24,9 +32,6 @@ def load_train_genes_for_cell_line(cell_line: int) -> pd.DataFrame:
     # verify that the order of genes matches before adding column for expression
     assert (gene_info.gene_name == gene_exp.gene_name).all()
     gene_info['gex'] = gene_exp.gex
-
-    # remove chr prefix from entries
-    gene_info['chr'] = gene_info['chr'].map(lambda x: x.lstrip('chr'))
 
     return gene_info
 
@@ -51,25 +56,43 @@ def load_test_genes() -> pd.DataFrame:
     """
     Load the test dataset.
 
-    :return: Dataframe of gene info for cell line 3.
+    :return: DataFrame of gene info for cell line 3
     """
     return load_info('X3_test_info')
+
+
+def load_all_genes() -> pd.DataFrame:
+    """
+    Load info for all genes.
+
+    :return: DataFrame with added cell line info and no gex
+    """
+    train_genes = load_train_genes().drop(columns='gex')
+    test_genes = load_test_genes()
+    test_genes['cell_line'] = 3
+    return pd.concat([train_genes, test_genes])
 
 
 def get_train_chr() -> list:
     return list(set(load_train_genes().chr))
 
 
-def load_genes_by_chr(chromosomes: list) -> pd.DataFrame:
+def filter_genes_by_chr(genes: pd.DataFrame, chromosomes: list[int]) -> pd.DataFrame:
     """
-    Get gene info for only some chromosomes. Intended for use during cross validation.
+    Filter genes by chromosome number. Intended for use during cross validation.
 
+    :param genes: DataFrame of gene info
     :param chromosomes: list of chromosomes to filter genes by
     :return: genes from specified chromosomes as a DataFrame
     """
-    all_genes = load_train_genes()
-    return all_genes[all_genes.chr.isin(chromosomes)]
+    return genes[genes.chr.isin(chromosomes)]
 
 
 if __name__ == '__main__':
-    genes = load_genes_by_chr(get_train_chr()[:5])
+    all_genes = load_train_genes()
+    genes = filter_genes_by_chr(all_genes, get_train_chr()[:5])
+    print(genes.head())
+
+    print('average tss length: ', (all_genes.TSS_end - all_genes.TSS_start).mean())
+
+    print(load_all_genes().head())

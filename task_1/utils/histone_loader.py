@@ -19,7 +19,8 @@ def get_histone_file(histone: str, cell_line: int) -> str:
     return list(filter(lambda p: os.path.exists(p), [path + ext for ext in file_extensions]))[0]
 
 
-def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str = 'mean', histones=None):
+def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str = 'mean', histones=None,
+                n_bins: int = 20) -> list[list[float]]:
     """
     Get values from given histone marks for bigwig files.
 
@@ -29,7 +30,8 @@ def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str
     :param stop: stop index in given chromosome (included in stats!)
     :param value_type: value type over given interval (in ['mean', 'max', 'min', 'coverage', 'std'])
     :param histones: list of bigwig histone modification to calculate
-    :return: averaged (by value type) value for given histone modifications from bigwig files
+    :param n_bins:
+    :return: averaged (by value type) values per bin for each given histone modifications
     """
     if histones is None:
         histones = HISTONE_MODS
@@ -42,14 +44,15 @@ def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str
     for histone in histones:
         filename = get_histone_file(histone, cell_line)
         bw = pyBigWig.open(filename)
-        stat = bw.stats(f'chr{chr}', start, stop, type=value_type)
-        # TODO: there is also an option to get a list of values for multiple bins!
+        histone_stats = list(
+            map(lambda x: 0 if x is None else x, bw.stats(f'chr{chr}', start, stop, type=value_type, nBins=n_bins)))
+
         bw.close()
-        stats += stat
+        stats.append(histone_stats)
 
     return stats
 
 
 if __name__ == '__main__':
     for cell_line in [1, 2, 3]:
-        print(get_bw_data(cell_line, 1, 10000, 10100))
+        print(get_bw_data(cell_line, 1, 10000, 11000))
