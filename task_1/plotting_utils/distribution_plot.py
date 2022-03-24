@@ -48,11 +48,11 @@ def plot_kde(x1, x2, min_v=-300, max_v=800, balance=True, names=['test', 'train'
     return fig, ax
 
 
-def plot_hvg(chromosome='1', n=20, show=True, figsize=(8, 8)):
+def plot_hvg(chromosome=1, n=20, show=True, figsize=(8, 8)):
     """PLots the highly variable (HVG) gex values between cell lines 1 and 2
 
-    :param chromosome: Chromosome of interest, defaults to '1'
-    :type chromosome: str, optional
+    :param chromosome: Chromosome of interest, defaults to 1
+    :type chromosome: int, optional
     :param n: number of top HVG gex to show, defaults to 20
 
     :type n: int, optional
@@ -66,9 +66,10 @@ def plot_hvg(chromosome='1', n=20, show=True, figsize=(8, 8)):
     """
 
     # Get data
+    all_genes = load_train_genes()
     train_chr = get_train_chr()
-    df = load_genes_by_chr(train_chr)
-    assert (chromosome in df.chr.values)
+    df = filter_genes_by_chr(all_genes, train_chr)
+    assert (int(chromosome) in df.chr.values)
 
     # Split into cell-lines
     df = df.sort_values(by='gene_name', ascending=True)
@@ -95,7 +96,7 @@ def plot_hvg(chromosome='1', n=20, show=True, figsize=(8, 8)):
     # Create DataFrame
     dist_df = pd.DataFrame(
         {'gene_name': gene_names,
-         'euclidean_dist': dist})
+         'euclidean_dist': dist_scaled})
 
     # Set index to gene names
     dist_df.set_index('gene_name', inplace=True, drop=True)
@@ -122,8 +123,9 @@ def plot_chr_similartiy(show=True):
     """
 
     # Get data
+    all_genes = load_train_genes()
     train_chr = get_train_chr()
-    df = load_genes_by_chr(train_chr)
+    df = filter_genes_by_chr(all_genes, train_chr)
 
     # Columns to drop
     cols_to_keep = ['gene_name', 'gex', 'chr']

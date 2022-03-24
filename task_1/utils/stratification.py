@@ -9,7 +9,7 @@ from sklearn.model_selection import GroupShuffleSplit
 from sklearn.model_selection import train_test_split
 
 
-def random_splits():
+def random_splits(test_size=0.3):
     """Generates random splits. Attempts to stratify based on the proportion
        of chromosomes and and cell-lines
 
@@ -17,14 +17,15 @@ def random_splits():
     :rtype: _type_
     """
 
-    # Pull in data
+    # Get data
+    all_genes = load_train_genes()
     train_chr = get_train_chr()
-    df = load_genes_by_chr(train_chr)
+    df = filter_genes_by_chr(all_genes, train_chr)
     df.sort_values(by='gene_name', ascending=True, inplace=True)
 
     # Split on cell lines stratified across chr and
     y_train, y_test = train_test_split(
-        df.gex, test_size=0.3,
+        df.gex, test_size=test_size,
         random_state=0,
         stratify=pd.concat([df.chr, df.cell_line],
                            axis=1))
@@ -43,9 +44,10 @@ def cell_line_splits():
     :rtype: pandas.core.DataFrame, pandas.core.DataFrame 
     """
 
-    # Pull in data
+    # Get data
+    all_genes = load_train_genes()
     train_chr = get_train_chr()
-    df = load_genes_by_chr(train_chr)
+    df = filter_genes_by_chr(all_genes, train_chr)
 
     # Split between cell lines
     x1 = df[(df.cell_line == 1)]
@@ -53,11 +55,11 @@ def cell_line_splits():
     return x1, x2
 
 
-def chromosome_split(cell_line=None, test_size=0.3):
+def chromosome_splits(cell_line=None, test_size=0.3):
     """Generates splits between chromosomes
 
     :param cell_line: 
-        if None: Mutually exlsive splits will be made with cell-line 1 & 2. Cell-line mixing allowed
+        if None: Mutually exclsive splits will be made with cell-line 1 & 2. Cell-line mixing allowed
         if 1: mutually exclusive chr splits will be made across cell-line 1. Celll-line mixing disallowed,
         if 2: mutually exclusive chr splits will be made across cell-line 2 . Cell-line mixing disallowed,
         defaults to None
@@ -70,9 +72,10 @@ def chromosome_split(cell_line=None, test_size=0.3):
     :rtype: pandas.core.DataFrame, pandas.core.DataFrame
     """
 
-    # Pull in data
+    # Get data
+    all_genes = load_train_genes()
     train_chr = get_train_chr()
-    df = load_genes_by_chr(train_chr)
+    df = filter_genes_by_chr(all_genes, train_chr)
 
     if cell_line == None:
         # Allow mixing between cell-lines
@@ -85,8 +88,7 @@ def chromosome_split(cell_line=None, test_size=0.3):
 
     # Collect disjoin sets
     gss = GroupShuffleSplit(n_splits=1, train_size=1 - test_size)
-    for train_idx, test_idx in gss.split(X=df, y=None, groups=groups):
-        y_train = df.iloc[train_idx]
-        y_test = df.iloc[test_idx]
-
+    train_idx, test_idx = next(gss.split(X=df, y=None, groups=groups))
+    y_train = df.iloc[train_idx]
+    y_test = df.iloc[test_idx]
     return y_train, y_test
