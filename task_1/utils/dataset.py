@@ -12,6 +12,12 @@ from task_1.utils.stratification import chromosome_split
 
 
 def get_gene_unique(gene: pd.Series) -> str:
+    """
+    Returns a unique string representation for given gene information.
+
+    :param gene: Series object including cell_line and gene_name.
+    :return: string representing given gene
+    """
     return f'{gene.cell_line}_{gene.gene_name}'
 
 
@@ -19,6 +25,14 @@ def generate_histone_pkl(histone_mods: list[str] = None,
                          left_flank_size: int = 1000,
                          right_flank_size: int = 1000,
                          n_bins: int = 20):
+    """
+    Generates histone modification data by bins for each gene and save to a pickle file.
+
+    :param histone_mods: list of histone modification signal types to look at (NB! currently, only default supported)
+    :param left_flank_size: number of nucleotides to the left side of TSS start to look at
+    :param right_flank_size: number of nucleotides to the right side of TSS start to look at (including TSS_start)
+    :param n_bins: number of bins to average histone modification signal over sequence
+    """
     print('Generating pkl file with histone modification data...')
     all_genes = load_all_genes()
     data_per_gene = {}
@@ -42,6 +56,16 @@ class HistoneDataset(Dataset):
                  left_flank_size: int = 1000,
                  right_flank_size: int = 1000,
                  bin_size: int = 100) -> None:
+        """
+        DataSet for model training based on histone modification data alone.
+        Load histone modification signal averages or pre-generate if missing.
+
+        :param genes: DataFrame of gene information from CAGE-train, including cell_line and gex for train genes
+        :param histone_mods: list of histone modification signal types to look at (NB! currently, only default supported)
+        :param left_flank_size: number of nucleotides to the left side of TSS start to look at
+        :param right_flank_size: number of nucleotides to the right side of TSS start to look at (including TSS_start)
+        :param bin_size: length of sequence to average histone modification values over
+        """
         if histone_mods is None:
             histone_mods = HISTONE_MODS
 
@@ -60,8 +84,6 @@ class HistoneDataset(Dataset):
 
     def __getitem__(self, idx) -> (np.ndarray, np.ndarray):
         gene = self.genes.iloc[idx, :]
-        start = gene.TSS_start - self.left_flank_size
-        end = gene.TSS_start + self.right_flank_size - 1  # marks last nucleotide index
 
         features = self.histones[get_gene_unique(gene)]
         # idk why simply to_numpy() couldn't proccess inner lists..
