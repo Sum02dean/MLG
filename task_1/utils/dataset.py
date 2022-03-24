@@ -34,7 +34,7 @@ def generate_histone_pkl(histone_mods: list[str] = None,
     df.to_pickle(f'../data/histones_all_l{left_flank_size}_r{right_flank_size}_b{n_bins}.pkl')
 
 
-class SeqHistDataset(Dataset):
+class HistoneDataset(Dataset):
 
     def __init__(self,
                  genes: pd.DataFrame,
@@ -63,7 +63,7 @@ class SeqHistDataset(Dataset):
         start = gene.TSS_start - self.left_flank_size
         end = gene.TSS_start + self.right_flank_size - 1  # marks last nucleotide index
 
-        features = np.array(self.histones[get_gene_unique(gene)])
+        features = self.histones[get_gene_unique(gene)]
         # idk why simply to_numpy() couldn't proccess inner lists..
         features = np.array([np.array(x) for x in features])
         if 'gex' not in gene:
@@ -78,7 +78,7 @@ class SeqHistDataset(Dataset):
 
 def example_train_valid_split():
     train_genes, valid_genes = chromosome_split(test_size=0.2)
-    train_dataloader = torch.utils.data.DataLoader(SeqHistDataset(train_genes), shuffle=True, batch_size=16)
+    train_dataloader = torch.utils.data.DataLoader(HistoneDataset(train_genes), shuffle=True, batch_size=16)
     # valid_dataloader = torch.utils.data.DataLoader(SeqHistDataset(valid_genes), shuffle=True, batch_size=16)
 
     for gene_features, gex in tqdm(train_dataloader):
