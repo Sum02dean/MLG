@@ -1,5 +1,4 @@
 import os
-from collections import Counter
 
 import numpy as np
 import pyfasta
@@ -15,18 +14,7 @@ SEQ_TO_ONEHOT = {
     'C': [0, 0, 1, 0],
     'G': [0, 0, 0, 1]
 }
-
-
-def get_sequence(chromosome_nr: int, start: int, stop: int) -> str:
-    """
-    Returns sequence as string in given chromosome with positions [start, stop].
-
-    :param chromosome_nr: chromosome from which to read sequence
-    :param start: first nucleotide position to read
-    :param stop: last nucleotide position to read (includes stop!)
-    :return: sequence as a string
-    """
-    return GENOME.sequence({'chr': f'chr{chromosome_nr}', 'start': start, 'stop': stop})
+COMPLEMENT = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A', 'N': 'N'}
 
 
 def clean_seq(seq: str) -> str:
@@ -37,7 +25,25 @@ def clean_seq(seq: str) -> str:
     """
     seq = seq.upper()
 
-    assert lambda key: key in ['A', 'T', 'C', 'G', 'N'], Counter(seq).keys()
+    assert lambda char: char in ['A', 'T', 'C', 'G', 'N'], set(seq)
+    return seq
+
+
+def get_sequence(chromosome_nr: int, start: int, stop: int, is_reverse: bool) -> str:
+    """
+    Returns sequence as string in given chromosome with positions [start, stop].
+    For reverse strand, returns the reverse complement.
+
+    :param chromosome_nr: chromosome from which to read sequence
+    :param start: first nucleotide position to read
+    :param stop: last nucleotide position to read (includes stop!)
+    :param is_reverse: must be set to True for reverse strand
+    :return: sequence as a string
+    """
+    seq = GENOME.sequence({'chr': f'chr{chromosome_nr}', 'start': start, 'stop': stop})
+    seq = clean_seq(seq)
+    if is_reverse:
+        return ''.join(COMPLEMENT[base] for base in reversed(seq))
     return seq
 
 
@@ -49,23 +55,26 @@ def encode_seq(seq: str) -> np.ndarray:
     :param seq: Input sequence.
     :return: One-hot encoded sequence as numpy array.
     """
-    seq = clean_seq(seq)
     return np.array([SEQ_TO_ONEHOT[nucleotide] for nucleotide in seq])
 
 
-def get_encoded_sequence(chromosome_nr: int, start: int, stop: int) -> np.ndarray:
+def get_encoded_sequence(chromosome_nr: int, start: int, stop: int, is_reverse: bool) -> np.ndarray:
     """
     Returns one-hot encoded sequence in given chromosome with positions [start, stop].
 
     :param chromosome_nr: chromosome from which to read sequence
     :param start: first nucleotide position to read
     :param stop: last nucleotide position to read (includes stop!)
+    :param is_reverse: must be set to True for reverse strand
     :return: One-hot encoded sequence as numpy array
     """
-    return encode_seq(get_sequence(chromosome_nr, start, stop))
+    return encode_seq(get_sequence(chromosome_nr, start, stop, is_reverse))
 
 
 if __name__ == '__main__':
-    sequence = get_sequence(1, 10000, 20000)
+    sequence = get_sequence(1, 10000, 10010, False)
+    print(sequence)
+    print(encode_seq(sequence))
+    sequence = get_sequence(1, 10000, 10010, True)
     print(sequence)
     print(encode_seq(sequence))
