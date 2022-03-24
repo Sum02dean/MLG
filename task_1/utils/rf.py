@@ -47,12 +47,9 @@ for stratifier in [random_splits, chromosome_split, cell_line_splits]:
 
     # Fit train
     clf.fit(x_train, y_train)
-    results = clf.cv_results_
-    print('CV score: {}'.format(results['mean_test_score']))
 
     # Predict test
     preds = clf.predict(x_test)
     test_score = stats.spearmanr(preds, y_test)
     print('Spearman Correlation score: {}'.format(test_score))
-
 print('Finished without errors.')
