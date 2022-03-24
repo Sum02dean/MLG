@@ -44,7 +44,9 @@ def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str
     for histone in histones:
         filename = get_histone_file(histone, cell_line)
         bw = pyBigWig.open(filename)
-        histone_stats = bw.stats(f'chr{chr}', start, stop, type=value_type, nBins=n_bins)
+        histone_stats = list(
+            map(lambda x: 0 if x is None else x, bw.stats(f'chr{chr}', start, stop, type=value_type, nBins=n_bins)))
+
         bw.close()
         stats.append(histone_stats)
 
