@@ -118,6 +118,9 @@ venv.bak/
 .spyderproject
 .spyproject
 
+# ignore vscode setting 
+.vscode
+
 # Rope project settings
 .ropeproject
 
@@ -145,3 +148,4 @@ dmypy.json
 # Task1
 task_1/data/
 ../task_1/utils/__pycache__/
+task_1/notebooks/data_format_exploration.ipynb
