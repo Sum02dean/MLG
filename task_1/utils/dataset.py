@@ -2,7 +2,6 @@ import os.path
 
 import numpy as np
 import pandas as pd
-import pickle
 import torch
 from torch.utils.data import Dataset
 from tqdm import tqdm
@@ -10,7 +9,7 @@ from tqdm import tqdm
 from data_loader import load_all_genes
 from histone_loader import HISTONE_MODS, get_bw_data
 from stratification import chromosome_splits
-
+ 
 
 def get_gene_unique(gene: pd.Series) -> str:
     """
@@ -25,8 +24,7 @@ def get_gene_unique(gene: pd.Series) -> str:
 def generate_histone_pkl(histone_mods: list[str] = None,
                          left_flank_size: int = 1000,
                          right_flank_size: int = 1000,
-                         n_bins: int = 20,
-                         return_dict: bool = False):
+                         n_bins: int = 20):
     """
     Generates histone modification data by bins for each gene and save to a pickle file.
 
@@ -46,15 +44,9 @@ def generate_histone_pkl(histone_mods: list[str] = None,
         features = get_bw_data(gene.cell_line, gene.chr, start, end, histones=histone_mods, value_type='mean',
                                n_bins=n_bins)
         data_per_gene[get_gene_unique(gene)] = features
-    if return_dict:
-        data_per_gene = {k:np.reshape(v,(1,len(histone_mods),n_bins)) for k,v in data_per_gene.items()}
-        with open(f'../data/histones_all_l{left_flank_size}_r{right_flank_size}_b{n_bins}_dict.pkl', 'wb') as handle:
-            pickle.dump(data_per_gene, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-    else:
-        df = pd.DataFrame.from_dict(data_per_gene)
-        df.to_pickle(
-            f'../data/histones_all_l{left_flank_size}_r{right_flank_size}_b{n_bins}.pkl')
+    df = pd.DataFrame.from_dict(data_per_gene)
+    df.to_pickle(
+        f'../data/histones_all_l{left_flank_size}_r{right_flank_size}_b{n_bins}.pkl')
 
 
 class HistoneDataset(Dataset):
@@ -64,8 +56,7 @@ class HistoneDataset(Dataset):
                  histone_mods: list[str] = None,
                  left_flank_size: int = 1000,
                  right_flank_size: int = 1000,
-                 bin_size: int = 100,
-                 return_dict: bool = False) -> None:
+                 bin_size: int = 100) -> None:
         """
         DataSet for model training based on histone modification data alone.
         Load histone modification signal averages or pre-generate if missing.
@@ -85,12 +76,7 @@ class HistoneDataset(Dataset):
         self.right_flank_size = right_flank_size
         self.n_bins = int((left_flank_size + right_flank_size) / bin_size)
 
-        self.return_dict = return_dict
-
-        if self.return_dict:
-            self.histone_file = f'../data/histones_all_l{left_flank_size}_r{right_flank_size}_b{self.n_bins}_dict.pkl'
-        else:
-            self.histone_file = f'../data/histones_all_l{left_flank_size}_r{right_flank_size}_b{self.n_bins}.pkl'
+        self.histone_file = f'../data/histones_all_l{left_flank_size}_r{right_flank_size}_b{self.n_bins}.pkl'
         self.histones = self.load_histone_data()
         pass
 
@@ -110,14 +96,8 @@ class HistoneDataset(Dataset):
     def load_histone_data(self):
         if not os.path.exists(self.histone_file):
             generate_histone_pkl(
-                self.histone_mods, self.left_flank_size, self.right_flank_size, self.n_bins,self.return_dict)
-
-        if self.return_dict:
-            with open(self.histone_file, 'rb') as handle:
-                   data_per_gene= pickle.load(handle)
-            return data_per_gene
-        else: 
-            return pd.read_pickle(self.histone_file) 
+                self.histone_mods, self.left_flank_size, self.right_flank_size, self.n_bins)
+        return pd.read_pickle(self.histone_file)
 
 
 def example_train_valid_split():
