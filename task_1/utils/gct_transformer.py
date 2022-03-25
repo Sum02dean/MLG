@@ -3,7 +3,6 @@ import sys
 import pandas as pd
 
 
-print(os.getcwd())
 from data_loader import load_train_genes_for_cell_line
 
 
