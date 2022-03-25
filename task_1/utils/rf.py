@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import scipy
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
 from data_loader import *
@@ -7,7 +8,6 @@ from dataset import *
 from histone_loader import*
 from stratification import *
 from tqdm import tqdm
-from scipy import statsd
 
 
 # Run Script
@@ -48,7 +48,7 @@ clf.fit(x_train, y_train)
 
 # Predict test
 preds = clf.predict(x_test)
-test_score = stats.spearmanr(preds, y_test)
+test_score = scipy.stats.spearmanr(preds, y_test)
 
 print('Spearman Correlation Score: {}'.format(test_score))
 print('Finished on self defined tests without errors.')
