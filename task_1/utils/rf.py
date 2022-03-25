@@ -6,8 +6,6 @@ from sklearn.model_selection import GridSearchCV
 from dataset import *
 from histone_loader import*
 from stratification import *
-from tqdm import tqdm
-
 
 # Run Script
 params = {
