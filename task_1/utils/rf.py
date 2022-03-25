@@ -16,7 +16,7 @@ params = {
     'bootstrap': [True],
 }
 
-for stratifier in [random_splits, chromosome_split, cell_line_splits]:
+for stratifier in [random_splits, chromosome_splits, cell_line_splits]:
 
     # Load models
     rfr = RandomForestRegressor(n_estimators=20)
@@ -40,16 +40,20 @@ for stratifier in [random_splits, chromosome_split, cell_line_splits]:
     _, n_features, n_bins = x_train.shape
     x_train = x_train.reshape(n_genes_train, n_features * n_bins)
 
-    # Run test loader
-    (x_test, y_test) = next(iter(test_dataloader))
-    n_genes_test, _, _ = x_test.shape
-    x_test = x_test.reshape(n_genes_test, n_features * n_bins)
+    print(x_train)
 
-    # Fit train data
-    clf.fit(x_train, y_train)
+    break
 
-    # Predict test
-    preds = clf.predict(x_test)
-    test_score = stats.spearmanr(preds, y_test)
-    print('Spearman Correlation score: {}'.format(test_score))
-print('Finished on self defined tests without errors.')
+#     # Run test loader
+#     (x_test, y_test) = next(iter(test_dataloader))
+#     n_genes_test, _, _ = x_test.shape
+#     x_test = x_test.reshape(n_genes_test, n_features * n_bins)
+
+#     # Fit train data
+#     clf.fit(x_train, y_train)
+
+#     # Predict test
+#     preds = clf.predict(x_test)
+#     test_score = stats.spearmanr(preds, y_test)
+#     print('Spearman Correlation score: {}'.format(test_score))
+# print('Finished on self defined tests without errors.')
