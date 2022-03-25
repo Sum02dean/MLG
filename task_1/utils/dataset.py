@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from task_1.utils.data_loader import load_all_genes
 from task_1.utils.histone_loader import HISTONE_MODS, get_bw_data
-from task_1.utils.stratification import chromosome_split
+from task_1.utils.stratification import chromosome_splits
 
 
 def get_gene_unique(gene: pd.Series) -> str:
@@ -45,7 +45,8 @@ def generate_histone_pkl(histone_mods: list[str] = None,
                                n_bins=n_bins)
         data_per_gene[get_gene_unique(gene)] = features
     df = pd.DataFrame.from_dict(data_per_gene)
-    df.to_pickle(f'../data/histones_all_l{left_flank_size}_r{right_flank_size}_b{n_bins}.pkl')
+    df.to_pickle(
+        f'../data/histones_all_l{left_flank_size}_r{right_flank_size}_b{n_bins}.pkl')
 
 
 class HistoneDataset(Dataset):
@@ -94,13 +95,15 @@ class HistoneDataset(Dataset):
 
     def load_histone_data(self):
         if not os.path.exists(self.histone_file):
-            generate_histone_pkl(self.histone_mods, self.left_flank_size, self.right_flank_size, self.n_bins)
+            generate_histone_pkl(
+                self.histone_mods, self.left_flank_size, self.right_flank_size, self.n_bins)
         return pd.read_pickle(self.histone_file)
 
 
 def example_train_valid_split():
-    train_genes, valid_genes = chromosome_split(test_size=0.2)
-    train_dataloader = torch.utils.data.DataLoader(HistoneDataset(train_genes), shuffle=True, batch_size=16)
+    train_genes, valid_genes = chromosome_splits(test_size=0.2)
+    train_dataloader = torch.utils.data.DataLoader(
+        HistoneDataset(train_genes), shuffle=True, batch_size=16)
     # valid_dataloader = torch.utils.data.DataLoader(SeqHistDataset(valid_genes), shuffle=True, batch_size=16)
 
     for gene_features, gex in tqdm(train_dataloader):
