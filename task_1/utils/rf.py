@@ -6,9 +6,9 @@ from data_loader import *
 from dataset import *
 from histone_loader import*
 from stratification import *
-from tqdm import tqdm
 from scipy import stats
 
+sdsad
 
 # Run Script
 params = {
