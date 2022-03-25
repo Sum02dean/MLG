@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import scipy
-from sklearn.ensemble import RandomForestRegressor
+from sklearn import svm
 from sklearn.model_selection import GridSearchCV
 from dataset import *
 from histone_loader import*
@@ -9,13 +9,12 @@ from stratification import *
 
 # Run Script
 params = {
-    'max_depth': [20],
-    'bootstrap': [True],
-}
+    'kernel':('linear', 'rbf'),
+     'C':[1, 10]}
 
 # Load models
-models = RandomForestRegressor(n_estimators=20)
-clf = GridSearchCV(estimator=models, param_grid=params, cv=3, n_jobs=-1)
+model = svm.SVR()
+clf = GridSearchCV(estimator=model, param_grid=params, cv=3, n_jobs=-1)
 
 # Get genes
 train_genes, test_genes = chromosome_splits()
