@@ -3,7 +3,6 @@ import torch
 import scipy
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
-from data_loader import *
 from dataset import *
 from histone_loader import*
 from stratification import *
