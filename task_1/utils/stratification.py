@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.model_selection import GroupShuffleSplit
 from sklearn.model_selection import train_test_split
 
-from utils.data_loader import load_train_genes
+from data_loader import load_train_genes
 
 
 def random_splits(test_size=0.3):
@@ -48,7 +48,7 @@ def cell_line_splits():
     return x1, x2
 
 
-def chromosome_splits(cell_line=None, test_size=0.3):
+def chromosome_split(cell_line=None, test_size=0.3):
     """Generates splits between chromosomes
 
     :param cell_line:
