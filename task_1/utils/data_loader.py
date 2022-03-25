@@ -94,8 +94,4 @@ if __name__ == '__main__':
     print(genes.head())
 
     print('average tss length: ', (all_genes.TSS_end - all_genes.TSS_start).mean())
-<<<<<<< HEAD
-=======
-
     print(load_all_genes().head())
->>>>>>> main
