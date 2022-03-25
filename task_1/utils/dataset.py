@@ -6,6 +6,7 @@ import torch
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
+
 from data_loader import load_all_genes
 from histone_loader import HISTONE_MODS, get_bw_data
 from stratification import chromosome_splits
@@ -101,7 +102,9 @@ class HistoneDataset(Dataset):
 
 
 def example_train_valid_split():
+
     train_genes, valid_genes = chromosome_split(test_size=0.2)
+
     train_dataloader = torch.utils.data.DataLoader(
         HistoneDataset(train_genes), shuffle=True, batch_size=16)
     # valid_dataloader = torch.utils.data.DataLoader(SeqHistDataset(valid_genes), shuffle=True, batch_size=16)
