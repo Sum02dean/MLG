@@ -47,6 +47,7 @@ def generate_histone_pkl(histone_mods: list[str] = None,
                                n_bins=n_bins)
         data_per_gene[get_gene_unique(gene)] = features
     if return_dict:
+        data_per_gene = {k:np.reshape(v,(1,len(histone_mods),n_bins)) for k,v in data_per_gene.items()}
         with open(f'../data/histones_all_l{left_flank_size}_r{right_flank_size}_b{n_bins}_dict.pkl', 'wb') as handle:
             pickle.dump(data_per_gene, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -114,6 +115,7 @@ class HistoneDataset(Dataset):
         if self.return_dict:
             with open(self.histone_file, 'rb') as handle:
                    data_per_gene= pickle.load(handle)
+            return data_per_gene
         else: 
             return pd.read_pickle(self.histone_file) 
 
