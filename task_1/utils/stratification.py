@@ -1,12 +1,8 @@
-import os
-import sys
-sys.path.append('../')
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from utils.data_loader import *
+import pandas as pd
 from sklearn.model_selection import GroupShuffleSplit
 from sklearn.model_selection import train_test_split
+from data_loader import load_train_genes
 
 
 def random_splits(test_size=0.3):
@@ -17,10 +13,8 @@ def random_splits(test_size=0.3):
     :rtype: _type_
     """
 
-    # Get data
-    all_genes = load_train_genes()
-    train_chr = get_train_chr()
-    df = filter_genes_by_chr(all_genes, train_chr)
+    # Pull in data
+    df = load_train_genes()
     df.sort_values(by='gene_name', ascending=True, inplace=True)
 
     # Split on cell lines stratified across chr and
@@ -41,13 +35,11 @@ def cell_line_splits():
     """simply splits data into X1 and X2
 
     :return: train and test data, X1 and X2 respectively
-    :rtype: pandas.core.DataFrame, pandas.core.DataFrame 
+    :rtype: pandas.core.DataFrame, pandas.core.DataFrame
     """
 
-    # Get data
-    all_genes = load_train_genes()
-    train_chr = get_train_chr()
-    df = filter_genes_by_chr(all_genes, train_chr)
+    # Pull in data
+    df = load_train_genes()
 
     # Split between cell lines
     x1 = df[(df.cell_line == 1)]
@@ -58,8 +50,8 @@ def cell_line_splits():
 def chromosome_splits(cell_line=None, test_size=0.3):
     """Generates splits between chromosomes
 
-    :param cell_line: 
-        if None: Mutually exclsive splits will be made with cell-line 1 & 2. Cell-line mixing allowed
+    :param cell_line:
+        if None: Mutually exclusive splits will be made with cell-line 1 & 2. Cell-line mixing allowed
         if 1: mutually exclusive chr splits will be made across cell-line 1. Celll-line mixing disallowed,
         if 2: mutually exclusive chr splits will be made across cell-line 2 . Cell-line mixing disallowed,
         defaults to None
@@ -68,16 +60,14 @@ def chromosome_splits(cell_line=None, test_size=0.3):
     :param test_size: ratio to allocate for test size, defaults to 0.3
     :type test_size: float, optional
 
-    :return: train and test data 
+    :return: train and test data
     :rtype: pandas.core.DataFrame, pandas.core.DataFrame
     """
 
-    # Get data
-    all_genes = load_train_genes()
-    train_chr = get_train_chr()
-    df = filter_genes_by_chr(all_genes, train_chr)
+    # Pull in data
+    df = load_train_genes()
 
-    if cell_line == None:
+    if cell_line is None:
         # Allow mixing between cell-lines
         groups = np.array(df.chr)
 
@@ -86,9 +76,12 @@ def chromosome_splits(cell_line=None, test_size=0.3):
         df = df[df.cell_line == cell_line]
         groups = np.array(df.chr)
 
-    # Collect disjoin sets
-    gss = GroupShuffleSplit(n_splits=1, train_size=1 - test_size)
-    train_idx, test_idx = next(gss.split(X=df, y=None, groups=groups))
+    # Collect disjoint sets
+    gss = GroupShuffleSplit(n_splits=1, train_size=1
+                            - test_size, random_state=42)
+
+    # Get indices
+    (train_idx, test_idx) = next(gss.split(X=df, y=None, groups=groups))
     y_train = df.iloc[train_idx]
     y_test = df.iloc[test_idx]
     return y_train, y_test

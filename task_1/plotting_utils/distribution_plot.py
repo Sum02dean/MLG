@@ -1,12 +1,9 @@
-import os
-import sys
-sys.path.append('../')
-import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-import matplotlib.pyplot as plt
-from utils.data_loader import *
+
 from plotting_utils.plotting_metrics import euclidean_distance
+from utils.data_loader import *
 
 
 def plot_kde(x1, x2, min_v=-300, max_v=800, balance=True, names=['test', 'train']):
@@ -66,10 +63,15 @@ def plot_hvg(chromosome=1, n=20, show=True, figsize=(8, 8)):
     """
 
     # Get data
+<<<<<<< HEAD
     all_genes = load_train_genes()
     train_chr = get_train_chr()
     df = filter_genes_by_chr(all_genes, train_chr)
     assert (int(chromosome) in df.chr.values)
+=======
+    df = load_train_genes()
+    assert (chromosome in df.chr.values)
+>>>>>>> main
 
     # Split into cell-lines
     df = df.sort_values(by='gene_name', ascending=True)
@@ -125,7 +127,11 @@ def plot_chr_similartiy(show=True):
     # Get data
     all_genes = load_train_genes()
     train_chr = get_train_chr()
+<<<<<<< HEAD
     df = filter_genes_by_chr(all_genes, train_chr)
+=======
+    df = load_train_genes()
+>>>>>>> main
 
     # Columns to drop
     cols_to_keep = ['gene_name', 'gex', 'chr']
@@ -160,7 +166,7 @@ def plot_chr_similartiy(show=True):
         ax = df_sim.plot.barh(figsize=(8, 8))
         ax.invert_yaxis()
         plt.title(
-            " Chromosome similarity distance (euclidean) for cell-lines A and B")
+            'Chromosome similarity distance (euclidean) for cell-lines A and B')
         plt.show()
 
     return df_sim

@@ -11,7 +11,12 @@ def load_info(filename: str) -> pd.DataFrame:
     file = f'data{os.sep}CAGE-train{os.sep}{filename}.tsv'
     if not os.path.exists(file):
         file = f'..{os.sep}' + file
-    return pd.read_csv(file, sep='\t')
+    df = pd.read_csv(file, sep='\t')
+
+    if 'chr' in df.columns:
+        # chr as int
+        df['chr'] = df['chr'].map(lambda x: int(x.lstrip('chr')))
+    return df
 
 
 def load_train_genes_for_cell_line(cell_line: int) -> pd.DataFrame:
@@ -27,9 +32,6 @@ def load_train_genes_for_cell_line(cell_line: int) -> pd.DataFrame:
     # verify that the order of genes matches before adding column for expression
     assert (gene_info.gene_name == gene_exp.gene_name).all()
     gene_info['gex'] = gene_exp.gex
-
-    # remove chr prefix from entries
-    gene_info['chr'] = gene_info['chr'].map(lambda x: int(x.lstrip('chr')))
 
     return gene_info
 
@@ -59,6 +61,18 @@ def load_test_genes() -> pd.DataFrame:
     return load_info('X3_test_info')
 
 
+def load_all_genes() -> pd.DataFrame:
+    """
+    Load info for all genes.
+
+    :return: DataFrame with added cell line info and no gex
+    """
+    train_genes = load_train_genes().drop(columns='gex')
+    test_genes = load_test_genes()
+    test_genes['cell_line'] = 3
+    return pd.concat([train_genes, test_genes])
+
+
 def get_train_chr() -> list:
     return list(set(load_train_genes().chr))
 
@@ -80,3 +94,8 @@ if __name__ == '__main__':
     print(genes.head())
 
     print('average tss length: ', (all_genes.TSS_end - all_genes.TSS_start).mean())
+<<<<<<< HEAD
+=======
+
+    print(load_all_genes().head())
+>>>>>>> main
