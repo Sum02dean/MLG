@@ -72,7 +72,7 @@ class ModuleDense(nn.Module):
 		if self.SeqOrDnase=='seq':
 			seq = seq.view(n,1,4,w)
 		elif self.SeqOrDnase=='dnase':
-			seq = seq.view(n,1,7,w) # seq = seq.view(n,1,1,w) here , 20 or 7??
+			seq = seq.view(n,1,7,w) # seq = seq.view(n,1,1,w)  here w=20 .bin size
 		out = self.conv1(seq)
 		out = self.block1(out)
 		out = self.trans1(out)
@@ -107,7 +107,7 @@ class NetDeepHistone(nn.Module):
 			nn.ReLU(),
 			#nn.Dropout(0.1),
 			nn.Linear(925,1), # nn.Linear(925,7), here we only want to predict 1 output/gene expression
-			nn.Sigmoid(), #nn.Sigmoid(), as now its a regression problem not a classifction problem
+			#nn.Sigmoid(), as now its a regression problem not a classifction problem
 		)
 
 	def forward(self, seq, dns):

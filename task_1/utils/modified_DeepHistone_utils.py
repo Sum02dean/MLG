@@ -8,7 +8,7 @@ def loadRegions(regions_indexs,dna_dict,dns_dict,label_dict,):
 	if dns_dict is not None:
 		dns_regions = np.concatenate([dns_dict[meta] for meta in regions_indexs],axis=0)
 	else: dns_regions =[]
-	label_regions = np.concatenate([label_dict[meta] for meta in regions_indexs],axis=0).astype(int)
+	label_regions = np.concatenate([label_dict[meta] for meta in regions_indexs],axis=0) #.astype(int) ; here our output is regression value 
 	return dna_regions,dns_regions,label_regions
  	
 def model_train(regions,model,batchsize,dna_dict,dns_dict,label_dict,):
