@@ -44,7 +44,7 @@ class ModuleDense(nn.Module):
 			)
 		elif self.SeqOrDnase =='dnase'  :
 			self.conv1 = nn.Sequential(
-			nn.Conv2d(1,128,(1,9),1,(0,4)),
+			nn.Conv2d(1,128,(7,9),1,(0,4)), # here 7 is number of histone marks
 			#nn.Dropout2d(0.2),
 			)	
 		self.block1 = DenseBlock(3, 128, 128)	
@@ -63,50 +63,62 @@ class ModuleDense(nn.Module):
 			#nn.Dropout2d(0.2),
 			nn.MaxPool2d((1,4)),
 		)
-		self.out_size = 1000 // 4 // 4  * 512
+		#self.out_size = 1000 // 4 // 4  * 512 here need to be changed 
+		self.out_size = 20 // 4 // 4  * 512
 
 	def forward(self, seq):
 		n, h, w = seq.size()
+		#print("seq.size(),n,h,w",n,h,w)
 		if self.SeqOrDnase=='seq':
 			seq = seq.view(n,1,4,w)
 		elif self.SeqOrDnase=='dnase':
-			seq = seq.view(n,1,1,w)
+			seq = seq.view(n,1,7,w) # seq = seq.view(n,1,1,w) here , 20 or 7??
 		out = self.conv1(seq)
 		out = self.block1(out)
 		out = self.trans1(out)
 		out = self.block2(out)
 		out = self.trans2(out)
 		n, c, h, w = out.size()
+		#print(self.SeqOrDnase+".out.size:",n,c,h,w)
 		out = out.view(n,c*h*w) 
 		return out
 
 
 
 class NetDeepHistone(nn.Module):
+	""" Here concatenate histomark Module and DNA-seq module 
+
+	:param nn: _description_
+	:type nn: _type_
+	"""
 	def __init__(self, ):
 		super(NetDeepHistone, self).__init__()
 		print('DeepHistone(Dense,Dense) is used.')
-		self.seq_map = ModuleDense(SeqOrDnase='seq',)
-		self.seq_len = self.seq_map.out_size
+		#self.seq_map = ModuleDense(SeqOrDnase='seq',)
+		#self.seq_len = self.seq_map.out_size
 		self.dns_map = ModuleDense(SeqOrDnase='dnase',)
 		self.dns_len = self.dns_map.out_size	
-		combined_len = self.dns_len# + self.seq_len 
+		combined_len = self.dns_len # + self.seq_len 
+		#print("combined_len:", combined_len)
 		self.linear_map = nn.Sequential(
 			nn.Dropout(0.5),
 			nn.Linear(int(combined_len),925),
 			nn.BatchNorm1d(925),
 			nn.ReLU(),
 			#nn.Dropout(0.1),
-			nn.Linear(925,1) # nn.Linear(925,7), here we only want to predict 1 output/gene expression
-			nn.Sigmoid(),
+			nn.Linear(925,1), # nn.Linear(925,7), here we only want to predict 1 output/gene expression
+			nn.Sigmoid(), #nn.Sigmoid(), as now its a regression problem not a classifction problem
 		)
 
 	def forward(self, seq, dns):
-		flat_seq = self.seq_map(seq)	
+		#flat_seq = self.seq_map(seq)	
 		n, h, w = dns.size()
+		#print("dns.size:",n,h,w)
 		dns = self.dns_map(dns) 
 		flat_dns = dns.view(n,-1)
-		combined =flat_dns # torch.cat([flat_seq, flat_dns], 1)
+		#print("flat_dns.size",flat_dns.size())
+		combined =torch.cat([flat_dns], 1) #flat_dns # torch.cat([flat_seq, flat_dns], 1)
+		#print("combined.size:",combined.size())
 		out = self.linear_map(combined)
 		return out
 
@@ -116,9 +128,10 @@ class DeepHistone():
 	Build CNN model as in DeepHistone Paper. For now will just omit DNA-seq input module 
 
 	"""
+
 	def __init__(self,use_gpu,learning_rate=0.001):
-		self.forward_fn = NetDeepHistone() # here get general model
-		self.criterion  = nn.BCELoss()
+		self.forward_fn = NetDeepHistone()  # here get general model
+		self.criterion  = nn.MSELoss() #nn.BCELoss() # change loss function suit for regression model 
 		self.optimizer  = optim.Adam(self.forward_fn.parameters(), lr=learning_rate, weight_decay = 0)
 		self.use_gpu    = use_gpu
 		if self.use_gpu : self.criterion,self.forward_fn = self.criterion.cuda(), self.forward_fn.cuda()

@@ -91,7 +91,7 @@ class HistoneDataset(Dataset):
         features = np.array([np.array(x) for x in features])
         if 'gex' not in gene:
             return features
-        return features, gene.gex
+        return features, gene.gex,get_gene_unique(gene)	
 
     def load_histone_data(self):
         if not os.path.exists(self.histone_file):
