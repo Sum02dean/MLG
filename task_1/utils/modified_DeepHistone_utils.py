@@ -48,21 +48,3 @@ def model_predict(regions,model,batchsize,dna_dict,dns_dict,label_dict,):
 		pred.extend(_pred)		
 	return np.array(lab), np.array(pred) 
 
-
-def ROC(label,pred):
-	if len(np.unique(np.array(label).reshape(-1)))  == 1:
-		print("all the labels are the same !")
-		return 0
-	else:
-		label = np.array(label).reshape(-1)
-		pred = np.array(pred).reshape(-1)
-		return roc_auc_score(label,pred)
-def auPR(label,pred):
-	if len(np.unique(np.array(label).reshape(-1)))  == 1:
-		print("all the labels are the same !")
-		return 0
-	else:
-		label = np.array(label).reshape(-1)
-		pred = np.array(pred).reshape(-1)
-		precision, recall, thresholds = precision_recall_curve(label,pred)
-		return auc(recall,precision)

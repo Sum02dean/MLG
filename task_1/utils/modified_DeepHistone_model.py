@@ -34,8 +34,9 @@ class DenseBlock(nn.Module):
 
 
 class ModuleDense(nn.Module):
-	def __init__(self,SeqOrDnase='seq',):
+	def __init__(self,SeqOrDnase='seq',bins=20):
 		super(ModuleDense, self).__init__()
+		self.bins=bins
 		self.SeqOrDnase = SeqOrDnase
 		if self.SeqOrDnase== 'seq':
 			self.conv1 = nn.Sequential(
@@ -64,7 +65,8 @@ class ModuleDense(nn.Module):
 			nn.MaxPool2d((1,4)),
 		)
 		#self.out_size = 1000 // 4 // 4  * 512 here need to be changed 
-		self.out_size = 20 // 4 // 4  * 512
+		#print(f"self.bins:{self.bins}")
+		self.out_size = self.bins // 4 // 4  * 512
 
 	def forward(self, seq):
 		n, h, w = seq.size()
@@ -91,12 +93,13 @@ class NetDeepHistone(nn.Module):
 	:param nn: _description_
 	:type nn: _type_
 	"""
-	def __init__(self, ):
+	def __init__(self, bins=20):
 		super(NetDeepHistone, self).__init__()
 		print('DeepHistone(Dense,Dense) is used.')
-		#self.seq_map = ModuleDense(SeqOrDnase='seq',)
+		self.bins=bins
+		#self.seq_map = ModuleDense(SeqOrDnase='seq',bins=self.bins)
 		#self.seq_len = self.seq_map.out_size
-		self.dns_map = ModuleDense(SeqOrDnase='dnase',)
+		self.dns_map = ModuleDense(SeqOrDnase='dnase',bins=self.bins)
 		self.dns_len = self.dns_map.out_size	
 		combined_len = self.dns_len # + self.seq_len 
 		#print("combined_len:", combined_len)
@@ -129,8 +132,8 @@ class DeepHistone():
 
 	"""
 
-	def __init__(self,use_gpu,learning_rate=0.001):
-		self.forward_fn = NetDeepHistone()  # here get general model
+	def __init__(self,use_gpu,learning_rate=0.001,bins=20):
+		self.forward_fn = NetDeepHistone(bins=bins)  # here get general model
 		self.criterion  = nn.MSELoss() #nn.BCELoss() # change loss function suit for regression model 
 		self.optimizer  = optim.Adam(self.forward_fn.parameters(), lr=learning_rate, weight_decay = 0)
 		self.use_gpu    = use_gpu
