@@ -39,7 +39,7 @@ model = RandomForestRegressor(n_estimators=20)
 clf = GridSearchCV(estimator=model, param_grid=params, cv=3, n_jobs=-1)
 
 # Get genes
-train_genes, test_genes = chromosome_splits()
+train_genes, test_genes = chromosome_splits(test_size=0.2)
 n_genes_train, _ = np.shape(train_genes)
 n_genes_test, _ = np.shape(test_genes)
 
