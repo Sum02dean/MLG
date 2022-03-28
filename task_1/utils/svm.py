@@ -1,26 +1,19 @@
 import numpy as np
 import torch
 import scipy
-from sklearn.ensemble import RandomForestRegressor
+from sklearn import svm
 from sklearn.model_selection import GridSearchCV
-from data_loader import *
 from dataset import *
 from histone_loader import*
 from stratification import *
-from tqdm import tqdm
 
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/main
 # Run Script
 params = {
-    'max_depth': [20],
-    'bootstrap': [True],
-}
+    'kernel': ['rbf'],
+     'C':[10]}
 
 # Load models
-model = RandomForestRegressor(n_estimators=20)
+model = svm.SVR()
 clf = GridSearchCV(estimator=model, param_grid=params, cv=3, n_jobs=-1)
 
 # Get genes
