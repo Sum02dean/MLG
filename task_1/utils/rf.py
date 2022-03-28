@@ -13,13 +13,13 @@ import argparse
 # Parse commands
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--model_name", "-mn",  type=str, default='model_x',
+parser.add_argument("--model_name", "-mn",  type=str, default='model_0',
                     help="Name of the model")
 
 parser.add_argument("--window_size", "-ws",  type=int, default=1000,
                     help="Number of nucleotides flanking TSS start to look at (including TSS_start)")
 
-parser.add_argument("--bin_size", "-bs",  type=int, default=1000,
+parser.add_argument("--bin_size", "-bs",  type=int, default=100,
                     help="length of sequence to average histone modification values over")
 
 # Args
@@ -73,7 +73,7 @@ preds = clf.predict(x_test)
 test_score = scipy.stats.spearmanr(preds, y_test)
 
 # Store the model performance
-with open (os.path.join('../outputs', '{}_spearmans.txt'.format(model_name))) as f:
+with open (os.path.join('../outputs', '{}_spearmans.txt'.format(model_name)), 'w+') as f:
     f.write(str(test_score))
 
 print('Spearman Correlation Score: {}'.format(test_score))
