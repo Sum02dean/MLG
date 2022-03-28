@@ -63,15 +63,10 @@ def plot_hvg(chromosome=1, n=20, show=True, figsize=(8, 8)):
     """
 
     # Get data
-<<<<<<< HEAD
     all_genes = load_train_genes()
     train_chr = get_train_chr()
     df = filter_genes_by_chr(all_genes, train_chr)
     assert (int(chromosome) in df.chr.values)
-=======
-    df = load_train_genes()
-    assert (chromosome in df.chr.values)
->>>>>>> main
 
     # Split into cell-lines
     df = df.sort_values(by='gene_name', ascending=True)
