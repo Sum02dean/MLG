@@ -9,7 +9,10 @@ from histone_loader import*
 from stratification import *
 import argparse
 
+<<<<<<< HEAD
+=======
 
+<<<<<<< HEAD
 # Parse commands
 parser = argparse.ArgumentParser()
 
@@ -28,6 +31,9 @@ model_name = str(args.model_name)
 window_size = int(args.window_size)
 bin_size = int(args.bin_size)
 
+=======
+>>>>>>> origin/main
+>>>>>>> 34-rf-baseline
 # Run Script
 params = {
     'max_depth': [20],
