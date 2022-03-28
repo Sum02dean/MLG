@@ -9,8 +9,8 @@ from stratification import *
 
 # Run Script
 params = {
-    'kernel':('linear', 'rbf'),
-     'C':[1, 10]}
+    'kernel': ['rbf'],
+     'C':[10]}
 
 # Load models
 model = svm.SVR()
