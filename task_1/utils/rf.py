@@ -7,8 +7,26 @@ from data_loader import *
 from dataset import *
 from histone_loader import*
 from stratification import *
-from tqdm import tqdm
+import argparse
 
+
+# Parse commands
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--model_name", "-mn",  type=str, default='model_x',
+                    help="Name of the model")
+
+parser.add_argument("--window_size", "-ws",  type=int, default=1000,
+                    help="Number of nucleotides flanking TSS start to look at (including TSS_start)")
+
+parser.add_argument("--bin_size", "-bs",  type=int, default=1000,
+                    help="length of sequence to average histone modification values over")
+
+# Args
+args = parser.parse_args()
+model_name = str(args.model_name)
+window_size = int(args.window_size)
+bin_size = int(args.bin_size)
 
 # Run Script
 params = {
@@ -17,8 +35,8 @@ params = {
 }
 
 # Load models
-rfr = RandomForestRegressor(n_estimators=20)
-clf = GridSearchCV(estimator=rfr, param_grid=params, cv=3, n_jobs=-1)
+model = RandomForestRegressor(n_estimators=20)
+clf = GridSearchCV(estimator=model, param_grid=params, cv=3, n_jobs=-1)
 
 # Get genes
 train_genes, test_genes = chromosome_splits()
@@ -27,11 +45,15 @@ n_genes_test, _ = np.shape(test_genes)
 
 # Load train data
 train_dataloader = torch.utils.data.DataLoader(
-    HistoneDataset(train_genes), shuffle=True, batch_size=n_genes_train)
+    HistoneDataset(train_genes,left_flank_size=window_size, right_flank_size=window_size, bin_size=bin_size), 
+    shuffle=True, 
+    batch_size=n_genes_train)
 
 # Load test data
 test_dataloader = torch.utils.data.DataLoader(
-    HistoneDataset(test_genes), shuffle=False, batch_size=n_genes_test)
+    HistoneDataset(train_genes,left_flank_size=window_size, right_flank_size=window_size, bin_size=bin_size),
+    shuffle=False, 
+    batch_size=n_genes_test)
 
 # Run train loader
 (x_train, y_train) = next(iter(train_dataloader))
@@ -50,5 +72,10 @@ clf.fit(x_train, y_train)
 preds = clf.predict(x_test)
 test_score = scipy.stats.spearmanr(preds, y_test)
 
+# Store the model performance
+with open (os.path.join('../outputs', '{}_spearmans.txt'.format(model_name))) as f:
+    f.write(str(test_score))
+
 print('Spearman Correlation Score: {}'.format(test_score))
 print('Finished on self defined tests without errors.')
+
