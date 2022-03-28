@@ -122,11 +122,7 @@ def plot_chr_similartiy(show=True):
     # Get data
     all_genes = load_train_genes()
     train_chr = get_train_chr()
-<<<<<<< HEAD
     df = filter_genes_by_chr(all_genes, train_chr)
-=======
-    df = load_train_genes()
->>>>>>> main
 
     # Columns to drop
     cols_to_keep = ['gene_name', 'gex', 'chr']
