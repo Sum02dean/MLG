@@ -9,10 +9,7 @@ from histone_loader import*
 from stratification import *
 from tqdm import tqdm
 
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/main
 # Run Script
 params = {
     'max_depth': [20],
