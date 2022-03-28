@@ -149,4 +149,4 @@ dmypy.json
 task_1/data/
 ../task_1/utils/__pycache__/
 task_1/notebooks/data_format_exploration.ipynb
-task_1/data_small
+task_1/data_small/
