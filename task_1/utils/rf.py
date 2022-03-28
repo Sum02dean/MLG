@@ -15,8 +15,8 @@ params = {
 }
 
 # Load models
-rfr = RandomForestRegressor(n_estimators=20)
-clf = GridSearchCV(estimator=rfr, param_grid=params, cv=3, n_jobs=-1)
+model = RandomForestRegressor(n_estimators=20)
+clf = GridSearchCV(estimator=model, param_grid=params, cv=3, n_jobs=-1)
 
 # Get genes
 train_genes, test_genes = chromosome_splits()
