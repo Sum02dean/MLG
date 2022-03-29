@@ -6,6 +6,14 @@ HISTONE_MODS: list[str] = ['DNase', 'H3K4me1', 'H3K4me3', 'H3K9me3', 'H3K27ac', 
 VALUE_TYPES = ['mean', 'max', 'min', 'coverage', 'std']
 
 
+def get_histones_unique(histone_mods: list[str]):
+    list_id = ''
+    for i, histone in enumerate(HISTONE_MODS):
+        if histone in histone_mods:
+            list_id += str(i)
+    return list_id
+
+
 def get_histone_file(histone: str, cell_line: int) -> str:
     """
     Find the histone modification data for a given histone modification and cell line with the correct bigwig extension.
@@ -54,5 +62,6 @@ def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str
 
 
 if __name__ == '__main__':
+    print(get_histones_unique(['H3K27ac', 'H3K4me1', 'H3K36me3']))
     for cell_line in [1, 2, 3]:
         print(get_bw_data(cell_line, 1, 10000, 11000))
