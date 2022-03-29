@@ -1,12 +1,9 @@
 import os.path
-
 import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
 from tqdm import tqdm
-
-from data_loader import load_all_genes
 from histone_loader import HISTONE_MODS, get_bw_data
 from stratification import chromosome_splits
  
