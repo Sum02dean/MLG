@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 from tqdm import tqdm
 
 from data_loader import load_all_genes
-from histone_loader import HISTONE_MODS, get_bw_data, get_histones_unique
+from histone_loader import HISTONE_MODS, get_bw_data, str_to_idx
 from stratification import chromosome_splits
 
 
@@ -21,18 +21,17 @@ def get_gene_unique(gene: pd.Series) -> str:
     return f'{gene.cell_line}_{gene.gene_name}'
 
 
-def get_filename(histone_mods: list[str], left_flank_size: int, right_flank_size: int, n_bins: int,
-                 bin_value_type: str):
-    histone_id = get_histones_unique(histone_mods)
-    return f'../data/histones_h_{histone_id}_l{left_flank_size}_r{right_flank_size}_b{n_bins}_v:{bin_value_type}.pkl'
+def get_filename(left_flank_size: int = 1000,
+                 right_flank_size: int = 1000,
+                 n_bins: int = 20):
+    return f'../data/histones_l{left_flank_size}_r{right_flank_size}_b{n_bins}.pkl'
 
 
-def get_histone_data(histone_mods: list[str], left_flank_size: int, right_flank_size: int, n_bins: int,
+def get_histone_data(left_flank_size: int, right_flank_size: int, n_bins: int,
                      bin_value_type: str):
     """
     Generates histone modification data by bins for each gene.
 
-    :param histone_mods: list of histone modification signal types to look at
     :param left_flank_size: number of nucleotides to the left side of TSS start to look at
     :param right_flank_size: number of nucleotides to the right side of TSS start to look at (including TSS_start)
     :param n_bins: number of bins to average histone modification signal over sequence
@@ -46,8 +45,7 @@ def get_histone_data(histone_mods: list[str], left_flank_size: int, right_flank_
         start = gene.TSS_start - left_flank_size
         end = gene.TSS_start + right_flank_size - 1  # marks last nucleotide index
 
-        features = get_bw_data(gene.cell_line, gene.chr, start, end, histones=histone_mods, value_type=bin_value_type,
-                               n_bins=n_bins)
+        features = get_bw_data(gene.cell_line, gene.chr, start, end, value_type=bin_value_type, n_bins=n_bins)
         data_per_gene[get_gene_unique(gene)] = features
     df = pd.DataFrame.from_dict(data_per_gene)
     return df
@@ -79,7 +77,7 @@ class HistoneDataset(Dataset):
         self.genes = genes
         n_bins = int((left_flank_size + right_flank_size) / bin_size)
 
-        self.histones = self.load_histone_data(histone_mods, left_flank_size, right_flank_size, n_bins, bin_value_type)
+        self.histones = self.load_histone_data(left_flank_size, right_flank_size, n_bins, bin_value_type)
         pass
 
     def __len__(self) -> int:
