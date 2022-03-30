@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 from tqdm import tqdm
 
 from data_loader import load_all_genes
-from histone_loader import HISTONE_MODS, get_bw_data, get_histones_unique
+from histone_loader import HISTONE_MODS, get_bw_data, str_to_idx
 from stratification import chromosome_splits
 
 
@@ -21,21 +21,18 @@ def get_gene_unique(gene: pd.Series) -> str:
     return f'{gene.cell_line}_{gene.gene_name}'
 
 
-def get_filename(histone_mods: list[str] = None,
-                 left_flank_size: int = 1000,
+def get_filename(left_flank_size: int = 1000,
                  right_flank_size: int = 1000,
                  n_bins: int = 20):
-    return f'../data/histones_h_{get_histones_unique(histone_mods)}_l{left_flank_size}_r{right_flank_size}_b{n_bins}.pkl'
+    return f'../data/histones_l{left_flank_size}_r{right_flank_size}_b{n_bins}.pkl'
 
 
-def generate_histone_pkl(histone_mods: list[str] = None,
-                         left_flank_size: int = 1000,
+def generate_histone_pkl(left_flank_size: int = 1000,
                          right_flank_size: int = 1000,
                          n_bins: int = 20):
     """
     Generates histone modification data by bins for each gene and save to a pickle file.
 
-    :param histone_mods: list of histone modification signal types to look at
     :param left_flank_size: number of nucleotides to the left side of TSS start to look at
     :param right_flank_size: number of nucleotides to the right side of TSS start to look at (including TSS_start)
     :param n_bins: number of bins to average histone modification signal over sequence
@@ -48,11 +45,10 @@ def generate_histone_pkl(histone_mods: list[str] = None,
         start = gene.TSS_start - left_flank_size
         end = gene.TSS_start + right_flank_size - 1  # marks last nucleotide index
 
-        features = get_bw_data(gene.cell_line, gene.chr, start, end, histones=histone_mods, value_type='mean',
-                               n_bins=n_bins)
+        features = get_bw_data(gene.cell_line, gene.chr, start, end, value_type='mean', n_bins=n_bins)
         data_per_gene[get_gene_unique(gene)] = features
     df = pd.DataFrame.from_dict(data_per_gene)
-    df.to_pickle(get_filename(histone_mods, left_flank_size, right_flank_size, n_bins))
+    df.to_pickle(get_filename(left_flank_size, right_flank_size, n_bins))
 
 
 class HistoneDataset(Dataset):
@@ -82,7 +78,7 @@ class HistoneDataset(Dataset):
         self.right_flank_size = right_flank_size
         self.n_bins = int((left_flank_size + right_flank_size) / bin_size)
 
-        self.histone_file = get_filename(histone_mods, left_flank_size, right_flank_size, self.n_bins)
+        self.histone_file = get_filename(left_flank_size, right_flank_size, self.n_bins)
         self.histones = self.load_histone_data()
         pass
 
@@ -102,8 +98,9 @@ class HistoneDataset(Dataset):
     def load_histone_data(self):
         if not os.path.exists(self.histone_file):
             generate_histone_pkl(
-                self.histone_mods, self.left_flank_size, self.right_flank_size, self.n_bins)
-        return pd.read_pickle(self.histone_file)
+                self.left_flank_size, self.right_flank_size, self.n_bins)
+        df = pd.read_pickle(self.histone_file)
+        return df.iloc[str_to_idx(self.histone_mods)]
 
 
 def example_train_valid_split():
