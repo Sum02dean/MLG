@@ -47,18 +47,18 @@ def get_sequence(chromosome_nr: int, start: int, stop: int, is_reverse: bool) ->
     return seq
 
 
-def encode_seq(seq: str) -> np.ndarray:
+def encode_seq(seq: str) -> list[list[int]]:
     """
     Converts given input sequence into a one-hot encoded array.
     'N' is represented as all zeros.
 
     :param seq: Input sequence.
-    :return: One-hot encoded sequence as numpy array.
+    :return: One-hot encoded sequence.
     """
-    return np.array([SEQ_TO_ONEHOT[nucleotide] for nucleotide in seq])
+    return [SEQ_TO_ONEHOT[nucleotide] for nucleotide in seq]
 
 
-def get_encoded_sequence(chromosome_nr: int, start: int, stop: int, is_reverse: bool) -> np.ndarray:
+def get_encoded_sequence(chromosome_nr: int, start: int, stop: int, is_reverse: bool) -> list[list[int]]:
     """
     Returns one-hot encoded sequence in given chromosome with positions [start, stop].
 
@@ -66,7 +66,7 @@ def get_encoded_sequence(chromosome_nr: int, start: int, stop: int, is_reverse: 
     :param start: first nucleotide position to read
     :param stop: last nucleotide position to read (includes stop!)
     :param is_reverse: must be set to True for reverse strand
-    :return: One-hot encoded sequence as numpy array
+    :return: One-hot encoded sequence
     """
     return encode_seq(get_sequence(chromosome_nr, start, stop, is_reverse))
 
