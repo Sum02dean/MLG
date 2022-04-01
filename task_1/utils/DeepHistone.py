@@ -1,3 +1,4 @@
+from typing import final
 import numpy as np
 import torch
 from sklearn.ensemble import RandomForestRegressor
@@ -65,12 +66,13 @@ gex_dict = get_dict_from_data(train_index,valid_index,test_index,
 
 
 model_save_file = '../data/DeepHistone/model.txt'
+final_model_save_file = '../data/DeepHistone/final_model.txt'
 lab_save_file ='../data/DeepHistone/label.txt'
 pred_save_file ='../data/DeepHistone/pred.txt'
 
 use_gpu = torch.cuda.is_available()
 batchsize=30#10000 # 20, 30
-epochs=10 #10 #50
+epochs=50 #10 #50
 
 print('Begin training model...')
 model = DeepHistone(use_gpu)
@@ -97,9 +99,16 @@ for epoch in tqdm(range(epochs)):
 	print(f"early_stop_time:{early_stop_time}")
 
 
-('Begin predicting...')
+('Begin predicting use besting model...')
 test_gex,test_pred = model_predict(test_index,best_model,batchsize,dna_dict,histone_dict,gex_dict,)	
 test_score = scipy.stats.spearmanr(test_pred , test_gex ).correlation
+print('Spearman Correlation Score: {}'.format(test_score))
+
+
+('Begin predicting use final model ...')
+test_gex,test_pred = model_predict(test_index,model,batchsize,dna_dict,histone_dict,gex_dict,)	
+test_score = scipy.stats.spearmanr(test_pred , test_gex ).correlation
+
 print('Spearman Correlation Score: {}'.format(test_score))
 
 
@@ -107,6 +116,8 @@ print('Begin saving...')
 np.savetxt(lab_save_file, valid_gex, fmt='%d', delimiter='\t')
 np.savetxt(pred_save_file, valid_pred, fmt='%.4f', delimiter='\t')
 best_model.save_model(model_save_file)
+model.save_model(final_model_save_file)
+
 
 
 print('Finished.')
