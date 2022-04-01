@@ -17,9 +17,9 @@ parser.add_argument("--model_name", "-mn",  type=str, default='model_0',
                     help="Name of the model")
 
 parser.add_argument("--window_size", "-ws",  type=int, default=1000,
-                    help="Number of nucleotides flanking TSS start to look at (including TSS_start)")
+                    help="Number of nucleotides flanking TSS to look at (including TSS_start)")
 
-parser.add_argument("--bin_size", "-bs",  type=int, default=100,
+parser.add_argument("--bin_size", "-bs",  type=int, default=30,
                     help="length of sequence to average histone modification values over")
 
 # Args
@@ -75,6 +75,7 @@ test_score = scipy.stats.spearmanr(preds, y_test)
 # Store the model performance
 with open (os.path.join('../outputs', '{}_spearmans.txt'.format(model_name)), 'w+') as f:
     f.write(str(test_score))
+    f.write(str(args))
 
 print('Spearman Correlation Score: {}'.format(test_score))
 print('Finished on self defined tests without errors.')

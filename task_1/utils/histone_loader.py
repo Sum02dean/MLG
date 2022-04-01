@@ -2,7 +2,8 @@ import os.path
 
 import pyBigWig
 
-HISTONE_MODS: list[str] = ['DNase', 'H3K4me1', 'H3K4me3', 'H3K9me3', 'H3K27ac', 'H3K27me3', 'H3K36me3']
+HISTONE_MODS: list[str] = ['DNase', 'H3K4me1', 'H3K4me3',
+                           'H3K9me3', 'H3K27ac', 'H3K27me3', 'H3K36me3']
 VALUE_TYPES = ['mean', 'max', 'min', 'coverage', 'std']
 
 
