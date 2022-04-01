@@ -152,6 +152,23 @@ class HistoneDataset(Dataset):
         return pd.read_pickle(seq_file)
 
 
+class HistoneDataset_returngenenames(HistoneDataset):
+
+    def __getitem__(self, idx) -> (np.ndarray, np.ndarray):
+        gene = self.genes.iloc[idx, :]
+
+        features = self.histones[get_gene_unique(gene)]
+        # idk why simply to_numpy() couldn't process inner lists..
+        features = list_2d_to_np(features)  # shape (batch_size, nr_histones, nr_bins)
+        if self.sequences is not None:
+            # seq data shape: (batch_size, left_flank + right flank, 4)
+            features = features, list_2d_to_np(self.sequences[get_gene_unique(gene)])
+        if 'gex' not in gene:
+            return features
+        return features, gene.gex,get_gene_unique(gene)
+
+
+
 def example_train_valid_split():
     train_genes, valid_genes = chromosome_splits(test_size=0.2)
     train_dataloader = torch.utils.data.DataLoader(
