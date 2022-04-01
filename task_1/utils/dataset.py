@@ -151,16 +151,21 @@ class HistoneDataset(Dataset):
             print(f'Saved seq data to {seq_file}')
         return pd.read_pickle(seq_file)
 
+
 class HistoneDataset_returngenenames(HistoneDataset):
+
     def __getitem__(self, idx) -> (np.ndarray, np.ndarray):
         gene = self.genes.iloc[idx, :]
 
         features = self.histones[get_gene_unique(gene)]
-        # idk why simply to_numpy() couldn't proccess inner lists..
-        features = np.array([np.array(x) for x in features])
+        # idk why simply to_numpy() couldn't process inner lists..
+        features = list_2d_to_np(features)  # shape (batch_size, nr_histones, nr_bins)
+        if self.sequences is not None:
+            # seq data shape: (batch_size, left_flank + right flank, 4)
+            features = features, list_2d_to_np(self.sequences[get_gene_unique(gene)])
         if 'gex' not in gene:
             return features
-        return features, gene.gex,get_gene_unique(gene)	
+        return features, gene.gex,get_gene_unique(gene)
 
 
 
