@@ -7,8 +7,8 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import GridSearchCV
 
-from dataset import *
-from stratification import *
+from utils.dataset import *
+from utils.stratification import *
 
 
 def set_seed(seed: int = 42):
