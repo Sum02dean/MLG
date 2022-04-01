@@ -134,7 +134,7 @@ if __name__ == '__main__':
             gene_features =gene_features.type(dtype)        
             seq_data = seq_data.type(dtype)
 
-        # Forward 
+            # Forward 
             optimizer.zero_grad()
             output = model(seq_data, batch_size=batch_size)
             assert(output.shape == gene_features.shape)
