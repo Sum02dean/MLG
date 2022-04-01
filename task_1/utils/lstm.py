@@ -17,8 +17,6 @@ bin_size=100
 bin_value_type = 'mean'
 histone_mods = 'H3K4me3'
 
-print(np.shape(train_genes))
-
 # # Build Loader
 train_dataloader = torch.utils.data.DataLoader(
     HistoneDataset(
