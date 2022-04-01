@@ -34,7 +34,7 @@ class DenseBlock(nn.Module):
 
 
 class ModuleDense(nn.Module):
-	def __init__(self,SeqOrDnase='seq',bins=20):
+	def __init__(self,SeqOrDnase='seq',bins=None):
 		super(ModuleDense, self).__init__()
 		self.bins=bins
 		self.SeqOrDnase = SeqOrDnase
@@ -93,34 +93,34 @@ class NetDeepHistone(nn.Module):
 	:param nn: _description_
 	:type nn: _type_
 	"""
-	def __init__(self, bins=20):
+	def __init__(self, bin_list=[2000,20]):
 		super(NetDeepHistone, self).__init__()
 		print('DeepHistone(Dense,Dense) is used.')
-		self.bins=bins
-		#self.seq_map = ModuleDense(SeqOrDnase='seq',bins=self.bins)
-		#self.seq_len = self.seq_map.out_size
-		self.dns_map = ModuleDense(SeqOrDnase='dnase',bins=self.bins)
+		self.seq_bins,self.histone_bins=bin_list
+		self.seq_map = ModuleDense(SeqOrDnase='seq',bins=self.seq_bins)
+		self.seq_len = self.seq_map.out_size
+		self.dns_map = ModuleDense(SeqOrDnase='dnase',bins=self.histone_bins)
 		self.dns_len = self.dns_map.out_size	
-		combined_len = self.dns_len # + self.seq_len 
+		combined_len = self.dns_len  + self.seq_len 
 		#print("combined_len:", combined_len)
 		self.linear_map = nn.Sequential(
 			nn.Dropout(0.5),
 			nn.Linear(int(combined_len),925),
 			nn.BatchNorm1d(925),
 			nn.ReLU(),
-			#nn.Dropout(0.1),
+			#nn.Dropout(0.1), # this one is not delete by me 
 			nn.Linear(925,1), # nn.Linear(925,7), here we only want to predict 1 output/gene expression
 			#nn.Sigmoid(), as now its a regression problem not a classifction problem
 		)
 
 	def forward(self, seq, dns):
-		#flat_seq = self.seq_map(seq)	
+		flat_seq = self.seq_map(seq)	
 		n, h, w = dns.size()
 		#print("dns.size:",n,h,w)
 		dns = self.dns_map(dns) 
 		flat_dns = dns.view(n,-1)
 		#print("flat_dns.size",flat_dns.size())
-		combined =torch.cat([flat_dns], 1) #flat_dns # torch.cat([flat_seq, flat_dns], 1)
+		combined =torch.cat([flat_seq, flat_dns], 1)
 		#print("combined.size:",combined.size())
 		out = self.linear_map(combined)
 		return out
@@ -132,8 +132,17 @@ class DeepHistone():
 
 	"""
 
-	def __init__(self,use_gpu,learning_rate=0.001,bins=20):
-		self.forward_fn = NetDeepHistone(bins=bins)  # here get general model
+	def __init__(self,use_gpu,learning_rate=0.001,bin_list=[2000,20]):
+		"""_summary_
+
+		:param use_gpu: _description_
+		:type use_gpu: _type_
+		:param learning_rate: _description_, defaults to 0.001
+		:type learning_rate: float, optional
+		:param bin_list: bins size for DNA seq data and histone marks, defaults to [2000,20]
+		:type bin_list: list, optional
+		"""
+		self.forward_fn = NetDeepHistone(bin_list=bin_list)  # here get general model
 		self.criterion  = nn.MSELoss() #nn.BCELoss() # change loss function suit for regression model 
 		self.optimizer  = optim.Adam(self.forward_fn.parameters(), lr=learning_rate, weight_decay = 0)
 		self.use_gpu    = use_gpu
