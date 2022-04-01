@@ -6,24 +6,6 @@ from stratification import *
 from torch.autograd import Variable
 
 
-# General fields
-train_genes, test_genes = chromosome_splits()
-n_genes_train, n_features = np.shape(train_genes)
-n_genes_test, _ = np.shape(test_genes)
-flank_size = 1000
-bin_size=100
-n_bins = 20
-bin_value_type = 'mean'
-histone_mods = ['H3K4me3']
-
-# Model fields
-batch_size = 15
-hidden_size = 100
-n_layers = 1
-OHE_dim = 4
-dtype = torch.float
-
-
 class cat_dataloaders():
     def __init__(self, dataloaders):
         """Class to concatenate multiple dataloaders for simultaneous loading.
@@ -100,53 +82,73 @@ class BasicRNN(nn.Module):
         return x
 
 
-# Model setup
-model = BasicRNN(input_size=OHE_dim, output_size=n_bins, hidden_size=hidden_size, num_layers=n_layers)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001) 
-criterion = nn.MSELoss()
-print(model)
+if __name__ == '__main__':
 
-# Build train loader
-train_dataloader = torch.utils.data.DataLoader(
-    HistoneDataset(
-        train_genes, histone_mods=histone_mods, bin_value_type=bin_value_type, bin_size=bin_size,
-        left_flank_size=flank_size, right_flank_size=flank_size, use_seq=True), shuffle=False,
-        batch_size=batch_size
-        )
+    # General fields
+    train_genes, test_genes = chromosome_splits()
+    n_genes_train, n_features = np.shape(train_genes)
+    n_genes_test, _ = np.shape(test_genes)
+    flank_size = 1000
+    bin_size=100
+    n_bins = 20
+    bin_value_type = 'mean'
+    histone_mods = ['H3K4me3']
 
-# Build train loader
-test_dataloader = torch.utils.data.DataLoader(
-    HistoneDataset(
-        test_genes, histone_mods=histone_mods, bin_value_type=bin_value_type, bin_size=bin_size,
-        left_flank_size=flank_size, right_flank_size=flank_size, use_seq=True), shuffle=False,
-        batch_size=batch_size
-        )
+    # Model fields
+    batch_size = 15
+    hidden_size = 100
+    n_layers = 1
+    OHE_dim = 4
+    dtype = torch.float
 
-# seq_data should be (batch_size, seq_len, n_features) or (batch_size, 2000, 4)
-print_every = 10
-for epoch in tqdm(range(1)):
-    running_loss = 0.0
-    for i, ((gene_features, seq_data), gex_train) in enumerate(train_dataloader):
 
-        # Format dtypes
-        gene_features =gene_features.type(dtype)        
-        seq_data = seq_data.type(dtype)
+    # Model setup
+    model = BasicRNN(input_size=OHE_dim, output_size=n_bins, hidden_size=hidden_size, num_layers=n_layers)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001) 
+    criterion = nn.MSELoss()
+    print(model)
 
-       # Forward 
-        optimizer.zero_grad()
-        output = model(seq_data, batch_size=batch_size)
-        assert(output.shape == gene_features.shape)
+    # Build train loader
+    train_dataloader = torch.utils.data.DataLoader(
+        HistoneDataset(
+            train_genes, histone_mods=histone_mods, bin_value_type=bin_value_type, bin_size=bin_size,
+            left_flank_size=flank_size, right_flank_size=flank_size, use_seq=True), shuffle=False,
+            batch_size=batch_size
+            )
 
-        # Backward + optimize
-        loss = criterion(output, gene_features)
-        running_loss += loss.item()
-        loss.backward()
-        print(output.shape)
-        optimizer.step()
+    # Build train loader
+    test_dataloader = torch.utils.data.DataLoader(
+        HistoneDataset(
+            test_genes, histone_mods=histone_mods, bin_value_type=bin_value_type, bin_size=bin_size,
+            left_flank_size=flank_size, right_flank_size=flank_size, use_seq=True), shuffle=False,
+            batch_size=batch_size
+            )
 
-        # print every 500 mini-batches
-        if i % print_every == print_every-1:    
-            print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / print_every:.3f}')
-            running_loss = 0.0
-    
-print('Finished Training')
+    # seq_data should be (batch_size, seq_len, n_features) or (batch_size, 2000, 4)
+    print_every = 10
+    for epoch in tqdm(range(1)):
+        running_loss = 0.0
+        for i, ((gene_features, seq_data), gex_train) in enumerate(train_dataloader):
+
+            # Format dtypes
+            gene_features =gene_features.type(dtype)        
+            seq_data = seq_data.type(dtype)
+
+        # Forward 
+            optimizer.zero_grad()
+            output = model(seq_data, batch_size=batch_size)
+            assert(output.shape == gene_features.shape)
+
+            # Backward + optimize
+            loss = criterion(output, gene_features)
+            running_loss += loss.item()
+            loss.backward()
+            print(output.shape)
+            optimizer.step()
+
+            # print every 500 mini-batches
+            if i % print_every == print_every-1:    
+                print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / print_every:.3f}')
+                running_loss = 0.0
+        
+    print('Finished Training')
