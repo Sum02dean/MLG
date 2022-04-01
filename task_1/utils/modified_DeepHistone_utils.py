@@ -10,7 +10,7 @@ def get_reshaped_data(dataloader):
 	"""
 	(x, y,genename) = next(iter(dataloader)) # this step is slow since it actually loads all data 
 	x_histone,x_seq=x
-	print(x_histone.shape,x_seq.shape,y.shape,len(genename),len(set(genename)))
+	#print(x_histone.shape,x_seq.shape,y.shape,len(genename),len(set(genename)))
 
 	n_genes, n_features_histone, n_bins_histone = x_histone.shape
 	x_histone = x_histone.reshape(n_genes,1, n_features_histone, n_bins_histone)
@@ -19,7 +19,7 @@ def get_reshaped_data(dataloader):
 	x_seq = x_seq.reshape(n_genes,1, n_features_seq, n_bins_seq)
 
 	y = y.reshape(n_genes,1,1)
-	print(x_histone.shape,x_seq.shape,y.shape)
+	#print(x_histone.shape,x_seq.shape,y.shape)
 
 	return(x_histone,x_seq,y,list(genename))
 
@@ -41,13 +41,13 @@ def get_dict_from_data(train_index,valid_index,test_index,train,valid,test):
 	:type test: _type_
 	"""
 	return_dict= {train_index[i]:train[i,...] for i in range(train.shape[0])}
-	print(len(return_dict))
+	#print(len(return_dict))
 
 	return_dict.update({valid_index[i]:valid[i,...] for i in range(valid.shape[0])})
-	print(len(return_dict))
+	#print(len(return_dict))
 
 	return_dict.update({test_index[i]:test[i,...] for i in range(test.shape[0])})
-	print(len(return_dict))
+	#print(len(return_dict))
 
 	return(return_dict)
 
@@ -68,7 +68,8 @@ def model_train(regions,model,batchsize,dna_dict,dns_dict,label_dict,):
 	regions_len = len(regions)
 	for i in range(0, regions_len , batchsize):
 		#for testing reason add this 
-		print(f"batch_idx: {i}")
+		if i % 100 ==0:
+			print(f"batch_idx: {i}")
 		regions_batch = [regions[i+j] for j in range(batchsize) if (i+j) < regions_len]
 		#print("region_batch: ",(regions_batch))
 		seq_batch ,dns_batch,lab_batch = loadRegions(regions_batch,dna_dict,dns_dict,label_dict)
