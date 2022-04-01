@@ -105,7 +105,7 @@ test_score = scipy.stats.spearmanr(test_pred , test_gex ).correlation
 print('Spearman Correlation Score: {}'.format(test_score))
 
 
-('Begin predicting use final model ...')
+('Begin predicting use final model...')
 test_gex,test_pred = model_predict(test_index,model,batchsize,dna_dict,histone_dict,gex_dict,)	
 test_score = scipy.stats.spearmanr(test_pred , test_gex ).correlation
 
