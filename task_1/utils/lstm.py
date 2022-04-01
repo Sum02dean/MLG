@@ -116,7 +116,7 @@ if __name__ == '__main__':
             batch_size=batch_size
             )
 
-    # Build train loader
+    # Build test loader
     test_dataloader = torch.utils.data.DataLoader(
         HistoneDataset(
             test_genes, histone_mods=histone_mods, bin_value_type=bin_value_type, bin_size=bin_size,
