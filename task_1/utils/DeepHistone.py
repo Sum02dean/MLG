@@ -19,14 +19,20 @@ from modified_DeepHistone_utils import get_dict_from_data
 
 # Get genes, notive here test_genes not refer to final test dataset used for submission
 # but subset from whole training dataset 
-total_train_genes, test_genes = chromosome_splits(test_size=0.05)
-n_total_train_genes=total_train_genes.shape[0]
-train_genes = total_train_genes.iloc[0:int(0.8*n_total_train_genes),:]
-valid_genes = total_train_genes.iloc[int(0.8*n_total_train_genes):,:]
+valid_chr=[5,20]
+test_chr=[2]
+train_chr=[i for i in range(1,23) if (i not in valid_chr+test_chr)]
+print(train_chr,valid_chr,test_chr)
+
+all_genes = load_train_genes()
+train_genes=filter_genes_by_chr(all_genes,train_chr)
+valid_genes=filter_genes_by_chr(all_genes,valid_chr)
+test_genes=filter_genes_by_chr(all_genes,test_chr)
 
 n_genes_train, _ = np.shape(train_genes)
 n_genes_valid, _ = np.shape(valid_genes)
 n_genes_test, _ = np.shape(test_genes)
+print(train_genes.shape,valid_genes.shape,test_genes.shape)
 
 
 # Load train data
@@ -64,7 +70,7 @@ pred_save_file ='../data/DeepHistone/pred.txt'
 
 use_gpu = torch.cuda.is_available()
 batchsize=30#10000 # 20, 30
-epochs=1 #10 #50
+epochs=10 #10 #50
 
 print('Begin training model...')
 model = DeepHistone(use_gpu)
