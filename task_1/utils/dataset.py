@@ -91,13 +91,25 @@ class HistoneDataset(Dataset):
         features = np.array([np.array(x) for x in features])
         if 'gex' not in gene:
             return features
-        return features, gene.gex,get_gene_unique(gene)	
+        return features, gene.gex
 
     def load_histone_data(self):
         if not os.path.exists(self.histone_file):
             generate_histone_pkl(
                 self.histone_mods, self.left_flank_size, self.right_flank_size, self.n_bins)
         return pd.read_pickle(self.histone_file)
+
+class HistoneDataset_returngenenames(HistoneDataset):
+    def __getitem__(self, idx) -> (np.ndarray, np.ndarray):
+        gene = self.genes.iloc[idx, :]
+
+        features = self.histones[get_gene_unique(gene)]
+        # idk why simply to_numpy() couldn't proccess inner lists..
+        features = np.array([np.array(x) for x in features])
+        if 'gex' not in gene:
+            return features
+        return features, gene.gex,get_gene_unique(gene)	
+
 
 
 def example_train_valid_split():
