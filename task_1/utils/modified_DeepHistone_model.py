@@ -110,6 +110,7 @@ class NetDeepHistone(nn.Module):
 			nn.ReLU(),
 			#nn.Dropout(0.1), # this one is not delete by me 
 			nn.Linear(925,1), # nn.Linear(925,7), here we only want to predict 1 output/gene expression
+			nn.ReLU(),
 			#nn.Sigmoid(), as now its a regression problem not a classifction problem
 		)
 
