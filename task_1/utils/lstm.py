@@ -66,8 +66,9 @@ class BasicRNN(nn.Module):
         # Activations
         self.relu = nn.ReLU()
 
-    def forward(self, x, batch_size):
+    def forward(self, x):
         """input shape should have shape (batch_size, seq_len, OHE_dim)"""
+        batch_size = x.shape[0]
 
         # Initialize hidden and cell states
         h_0 = Variable(torch.zeros(self.num_layers, x.size(0), self.hidden_size).type(dtype))
@@ -89,15 +90,15 @@ if __name__ == '__main__':
     train_genes, test_genes = chromosome_splits()
     n_genes_train, n_features = np.shape(train_genes)
     n_genes_test, _ = np.shape(test_genes)
-    flank_size = 1000
+    flank_size = 500
     bin_size = 100
-    n_bins = 20
+    n_bins = 2 * flank_size // bin_size
     bin_value_type = 'mean'
     histone_mods = ['H3K4me3']
 
     # Model fields
-    n_epochs = 1
-    batch_size = 15
+    n_epochs = 10
+    batch_size = 16
     hidden_size = 100
     n_layers = 1
     OHE_dim = 4
@@ -128,10 +129,13 @@ if __name__ == '__main__':
 
     # seq_data should be (batch_size, seq_len, n_features) or (batch_size, 2000, 4)
     update_every = 10
+    epoch_losses = []
+    test_losses = []
     for epoch in range(n_epochs):
         running_loss = 0.0
+        epoch_loss = 0.0
         with tqdm(total=n_genes_train // batch_size) as pbar:
-            for i, ((gene_features, seq_data), gex_train) in enumerate(train_dataloader):
+            for i, ((gene_features, seq_data), _) in enumerate(train_dataloader):
 
                 # Format dtypes
                 gene_features = gene_features.type(dtype)
@@ -139,11 +143,12 @@ if __name__ == '__main__':
 
                 # Forward
                 optimizer.zero_grad()
-                output = model(seq_data, batch_size=batch_size)
+                output = model(seq_data)
                 assert (output.shape == gene_features.shape)
 
                 # Backward + optimize
                 loss = criterion(output, gene_features)
+                epoch_loss += output.shape[0] * loss.item()
                 running_loss += loss.item()
                 loss.backward()
                 optimizer.step()
@@ -151,7 +156,19 @@ if __name__ == '__main__':
                 # update progress bar
                 pbar.update(1)
                 if i % update_every == update_every - 1:
-                    pbar.set_description(f'Epoch {epoch + 1} ({i + 1:5d}):  loss {running_loss / update_every:.3f}')
+                    pbar.set_description(f'Epoch {epoch + 1}/{n_epochs}:  loss {running_loss / update_every:.3f}')
                     running_loss = 0.0
+
+        epoch_losses.append(epoch_loss / n_genes_train)
+        test_loss = 0.0
+        for (gene_features, seq_data), _ in test_dataloader:
+            gene_features = gene_features.type(dtype)
+            seq_data = seq_data.type(dtype)
+
+            output = model(seq_data)
+            loss = criterion(output, gene_features)
+            test_loss += output.shape[0] * loss.item()
+        test_losses.append(test_loss / n_genes_test)
+        print(epoch_losses, test_losses)
 
     print('Finished Training')
