@@ -116,17 +116,19 @@ class NetDeepHistone(nn.Module):
 
 	def forward(self, seq, dns):
 		seq_n, seq_h, seq_w = seq.size()
-		print("seq.size:",seq_n,seq_h,seq_w)
+		#print("seq.size:",seq_n,seq_h,seq_w)
 		dns_n, dns_h, dns_w = dns.size()
-		print("dns.size:",dns_n,dns_h,dns_w)
+		#print("dns.size:",dns_n,dns_h,dns_w)
 
 		flat_seq = self.seq_map(seq)	
-		print("flat_seq.size:",flat_seq.size())
+		#print("flat_seq.size:",flat_seq.size())
 		dns = self.dns_map(dns) 
+		#print("dns.size:",dns.size())
 		flat_dns = dns.view(dns_n,-1) # so here actully is strang , why seq not needed flatting ?
-		print("flat_dns.size:",flat_dns.size())
+		# okay , so this step is acutlly not neceseary 
+		#print("flat_dns.size:",flat_dns.size())
 		combined =torch.cat([flat_seq, flat_dns], 1)
-		print("combined.size:",combined.size())
+		#print("combined.size:",combined.size())
 		out = self.linear_map(combined)
 		return out
 
@@ -201,7 +203,7 @@ class DeepHistone():
 
 class ModuleDense_opt1(nn.Module):
 	def __init__(self,SeqOrDnase='seq',bins=None):
-		super(ModuleDense, self).__init__()
+		super(ModuleDense_opt1, self).__init__()
 		self.bins=bins
 		self.SeqOrDnase = SeqOrDnase
 		if self.SeqOrDnase== 'seq':
@@ -225,6 +227,7 @@ class ModuleDense_opt1(nn.Module):
 		#self.out_size = 1000 // 4 // 4  * 512 here need to be changed 
 		#print(f"self.bins:{self.bins}")
 		self.out_size = self.bins // 4 // 4  * 256
+		print(f"self.out_size:{self.out_size}")
 
 	def forward(self, seq):
 		n, h, w = seq.size()
@@ -249,7 +252,7 @@ class NetDeepHistone_opt1(nn.Module):
 	:type nn: _type_
 	"""
 	def __init__(self, bin_list=[2000,20]):
-		super(NetDeepHistone, self).__init__()
+		super(NetDeepHistone_opt1, self).__init__()
 		print('DeepHistone(Dense,Dense) is used.')
 		self.seq_bins,self.histone_bins=bin_list
 		self.seq_map = ModuleDense_opt1(SeqOrDnase='seq',bins=self.seq_bins)
@@ -257,7 +260,7 @@ class NetDeepHistone_opt1(nn.Module):
 		self.dns_map = ModuleDense_opt1(SeqOrDnase='dnase',bins=self.histone_bins)
 		self.dns_len = self.dns_map.out_size	
 		combined_len = self.dns_len  + self.seq_len 
-		#print("combined_len:", combined_len)
+		print("combined_len:", combined_len)
 		self.linear_map = nn.Sequential(
 			nn.Dropout(0.5),
 			nn.Linear(int(combined_len),925),
@@ -277,7 +280,7 @@ class NetDeepHistone_opt1(nn.Module):
 		flat_dns = dns.view(n,-1)
 		#print("flat_dns.size",flat_dns.size())
 		combined =torch.cat([flat_seq, flat_dns], 1)
-		#print("combined.size:",combined.size())
+		print("combined.size:",combined.size())
 		out = self.linear_map(combined)
 		return out
 

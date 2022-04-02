@@ -97,7 +97,12 @@ batchsize=30#10000 # 20, 30
 epochs=3 #10 #50
 
 logging.info(f'Begin training model...batch_size:{batchsize}epochs:{epochs}')
-model = DeepHistone(use_gpu,bin_list=[seq_bins,histone_bins])
+
+if prefix=="basic-model-":#"opt1-model-" "basic-model-"
+	model = DeepHistone(use_gpu,bin_list=[seq_bins,histone_bins])
+elif prefix=="opt1-model-":
+	model = DeepHistone_opt1(use_gpu,bin_list=[seq_bins,histone_bins])
+
 best_model = copy.deepcopy(model)
 best_valid_spearmanr=0
 best_valid_loss = float('Inf')
