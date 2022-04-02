@@ -22,10 +22,12 @@ from modified_DeepHistone_utils import save_model
 
 
 model_save_folder="../data/DeepHistone/"
+prefix="basic-model-"
 
 time_stamp=time.strftime("%Y%m%d-%H%M%S")
-logging.basicConfig(level=logging.INFO, filename=f"{model_save_folder}time{time_stamp}.log",
-                    filemode="a",)
+Log_Format = "%(levelname)s %(asctime)s - %(message)s"
+logging.basicConfig(level=logging.INFO, filename=f"{model_save_folder}{prefix}time{time_stamp}.log",
+                    filemode="a",format=Log_Format)
 
 
 
@@ -48,8 +50,8 @@ logging.info(f"train_genes.shape:{train_genes.shape}valid_genes.shape:{valid_gen
 
 
 # set some hyper-parameters
-left_flank_size = 500#1000
-right_flank_size = 500#1000
+left_flank_size = 1000#500#1000
+right_flank_size = 1000 #500#1000
 seq_bin_size=left_flank_size+right_flank_size
 histone_bin_size = 1 #100
 
@@ -139,9 +141,9 @@ logging.info('Begin saving...')
 np.savetxt(f"{model_save_folder}label.txt", valid_gex, fmt='%d', delimiter='\t')
 np.savetxt(f"{model_save_folder}pred.txt", valid_pred, fmt='%.4f', delimiter='\t')
 save_model(model=best_model,epoch=epoch,seq_bins=seq_bins,histone_bins=histone_bins,
-            model_save_folder=model_save_folder,prefix="",suffix="best")
+            model_save_folder=model_save_folder,prefix=prefix,suffix="best")
 save_model(model=best_model,epoch=epoch,seq_bins=seq_bins,histone_bins=histone_bins,
-            model_save_folder=model_save_folder,prefix="",suffix="final")
+            model_save_folder=model_save_folder,prefix=prefix,suffix="final")
 
 
 
