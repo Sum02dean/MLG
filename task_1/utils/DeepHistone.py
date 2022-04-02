@@ -16,6 +16,7 @@ from modified_DeepHistone_model import DeepHistone
 from modified_DeepHistone_utils import model_train,model_eval,model_predict
 from modified_DeepHistone_utils import get_reshaped_data
 from modified_DeepHistone_utils import get_dict_from_data
+from modified_DeepHistone_utils import save_model
 
 
 # Get genes, notive here test_genes not refer to final test dataset used for submission
@@ -35,17 +36,31 @@ n_genes_valid, _ = np.shape(valid_genes)
 n_genes_test, _ = np.shape(test_genes)
 print(train_genes.shape,valid_genes.shape,test_genes.shape)
 
+# set some hyper-parameters
+left_flank_size = 500#1000
+right_flank_size = 500#1000
+seq_bin_size=left_flank_size+right_flank_size
+histone_bin_size = 20 #100
+
+seq_bins=seq_bin_size
+assert seq_bin_size % histone_bin_size==0
+histone_bins=int(seq_bin_size/histone_bin_size)
+print(seq_bins,histone_bins)
 
 # Load train data
 train_dataloader = torch.utils.data.DataLoader(
-    HistoneDataset_returngenenames(train_genes,use_seq=True), shuffle=False, batch_size=n_genes_train)
+    HistoneDataset_returngenenames(train_genes,left_flank_size=left_flank_size,right_flank_size=right_flank_size,bin_size=histone_bin_size,use_seq=True), 
+    shuffle=False, batch_size=n_genes_train)
+
 # Load valid data
 valid_dataloader = torch.utils.data.DataLoader(
-    HistoneDataset_returngenenames(valid_genes,use_seq=True), shuffle=False, batch_size=n_genes_valid)
+    HistoneDataset_returngenenames(valid_genes,left_flank_size=left_flank_size,right_flank_size=right_flank_size,bin_size=histone_bin_size,use_seq=True), 
+    shuffle=False, batch_size=n_genes_valid)
+
 # Load test data
 test_dataloader = torch.utils.data.DataLoader(
-    HistoneDataset_returngenenames(test_genes,use_seq=True), shuffle=False, batch_size=n_genes_valid)
-
+    HistoneDataset_returngenenames(test_genes,left_flank_size=left_flank_size,right_flank_size=right_flank_size,bin_size=histone_bin_size,use_seq=True), 
+    shuffle=False, batch_size=n_genes_valid)
 
 
 # get DeepHistone required data format 
@@ -65,26 +80,26 @@ gex_dict = get_dict_from_data(train_index,valid_index,test_index,
 
 
 
-model_save_file = '../data/DeepHistone/model.txt'
-final_model_save_file = '../data/DeepHistone/final_model.txt'
-lab_save_file ='../data/DeepHistone/label.txt'
-pred_save_file ='../data/DeepHistone/pred.txt'
+
+
+model_save_folder="../data/DeepHistone/"
 
 use_gpu = torch.cuda.is_available()
 batchsize=30#10000 # 20, 30
-epochs=50 #10 #50
+epochs=3 #10 #50
 
 print('Begin training model...')
-model = DeepHistone(use_gpu)
+model = DeepHistone(use_gpu,bin_list=[seq_bins,histone_bins])
 best_model = copy.deepcopy(model)
 best_valid_spearmanr=0
 best_valid_loss = float('Inf')
+
 for epoch in tqdm(range(epochs)):
 	np.random.shuffle(train_index)
 	train_loss= model_train(train_index,model,batchsize,dna_dict,histone_dict,gex_dict,)
 	valid_loss,valid_gex,valid_pred= model_eval(valid_index, model,batchsize,dna_dict,histone_dict,gex_dict,)
 	valid_spearmanr= scipy.stats.spearmanr(valid_pred , valid_gex ).correlation
-
+	print(f"epoch:{epoch} valid_loss:{valid_loss} valid_spearmanr:{valid_spearmanr}")
 	if valid_spearmanr >best_valid_spearmanr:
 		best_model = copy.deepcopy(model)
 
@@ -97,6 +112,7 @@ for epoch in tqdm(range(epochs)):
 		if early_stop_time >= 5: break
 
 	print(f"early_stop_time:{early_stop_time}")
+
 
 
 ('Begin predicting use besting model...')
@@ -112,11 +128,14 @@ test_score = scipy.stats.spearmanr(test_pred , test_gex ).correlation
 print('Spearman Correlation Score: {}'.format(test_score))
 
 
+
 print('Begin saving...')
-np.savetxt(lab_save_file, valid_gex, fmt='%d', delimiter='\t')
-np.savetxt(pred_save_file, valid_pred, fmt='%.4f', delimiter='\t')
-best_model.save_model(model_save_file)
-model.save_model(final_model_save_file)
+np.savetxt(f"{model_save_folder}label.txt", valid_gex, fmt='%d', delimiter='\t')
+np.savetxt(f"{model_save_folder}pred.txt", valid_pred, fmt='%.4f', delimiter='\t')
+save_model(model=best_model,epoch=epoch,seq_bins=seq_bins,histone_bins=histone_bins,
+            model_save_folder=model_save_folder,prefix="",suffix="best")
+save_model(model=best_model,epoch=epoch,seq_bins=seq_bins,histone_bins=histone_bins,
+            model_save_folder=model_save_folder,prefix="",suffix="final")
 
 
 

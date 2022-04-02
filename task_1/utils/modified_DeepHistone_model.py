@@ -140,7 +140,7 @@ class DeepHistone():
 		:type use_gpu: _type_
 		:param learning_rate: _description_, defaults to 0.001
 		:type learning_rate: float, optional
-		:param bin_list: bins size for DNA seq data and histone marks, defaults to [2000,20]
+		:param bin_list: number of bins (not bin size)  for DNA seq data and histone marks, defaults to [2000,20]
 		:type bin_list: list, optional
 		"""
 		self.forward_fn = NetDeepHistone(bin_list=bin_list)  # here get general model
