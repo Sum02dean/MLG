@@ -15,6 +15,7 @@ from dataset import HistoneDataset_returngenenames
 from histone_loader import*
 from stratification import *
 from modified_DeepHistone_model import DeepHistone
+from DeepHistone_opt1 import DeepHistone_opt1
 from modified_DeepHistone_utils import model_train,model_eval,model_predict
 from modified_DeepHistone_utils import get_reshaped_data
 from modified_DeepHistone_utils import get_dict_from_data
@@ -53,7 +54,7 @@ logging.info(f"train_genes.shape:{train_genes.shape}valid_genes.shape:{valid_gen
 left_flank_size = 1000#500#1000
 right_flank_size = 1000 #500#1000
 seq_bin_size=left_flank_size+right_flank_size
-histone_bin_size = 1 #100
+histone_bin_size = 100 #100,1
 
 seq_bins=seq_bin_size
 assert seq_bin_size % histone_bin_size==0
@@ -96,10 +97,14 @@ use_gpu = torch.cuda.is_available()
 batchsize=30#10000 # 20, 30
 epochs=3 #10 #50
 
+conv_ksize,tran_ksize=9,4 
+logging.info(f"conv_ksize:{conv_ksize}tran_ksize:{tran_ksize}")
+
+
 logging.info(f'Begin training model...batch_size:{batchsize}epochs:{epochs}')
 
 if prefix=="basic-model-":#"opt1-model-" "basic-model-"
-	model = DeepHistone(use_gpu,bin_list=[seq_bins,histone_bins])
+	model = DeepHistone(use_gpu,bin_list=[seq_bins,histone_bins],inside_ksize=[conv_ksize,tran_ksize])
 elif prefix=="opt1-model-":
 	model = DeepHistone_opt1(use_gpu,bin_list=[seq_bins,histone_bins])
 

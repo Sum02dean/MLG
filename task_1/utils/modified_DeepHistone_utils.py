@@ -76,7 +76,7 @@ def model_train(regions,model,batchsize,dna_dict,dns_dict,label_dict,):
 	regions_len = len(regions)
 	for i in range(0, regions_len , batchsize):
 		#for testing reason add this 
-		if i % 5000 ==0: #100, 1000
+		if i % 1000 ==0: #100, 1000,5000
 			print(f"batch_idx: {i}")
 		regions_batch = [regions[i+j] for j in range(batchsize) if (i+j) < regions_len]
 		#print("region_batch: ",(regions_batch))

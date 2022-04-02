@@ -58,7 +58,7 @@ class ModuleDense(nn.Module):
 			#nn.Dropout2d(0.2),
 			nn.MaxPool2d((1,self.tran_ksize)),
 		)
-		self.block2 = DenseBlock(3,256,256)
+		self.block2 = DenseBlock(3,256,256,self.conv_ksize,self.conv_padsize)
 		self.trans2 = nn.Sequential(
 			nn.BatchNorm2d(256+3*256),
 			nn.ReLU(),
