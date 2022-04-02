@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import GroupShuffleSplit
 from sklearn.model_selection import train_test_split
-from data_loader import load_train_genes
+
+from utils.data_loader import load_train_genes
 
 
 def random_splits(test_size=0.3):

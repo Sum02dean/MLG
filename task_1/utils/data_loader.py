@@ -58,7 +58,9 @@ def load_test_genes() -> pd.DataFrame:
 
     :return: DataFrame of gene info for cell line 3
     """
-    return load_info('X3_test_info')
+    test_genes = load_info('X3_test_info')
+    test_genes['cell_line'] = 3
+    return test_genes
 
 
 def load_all_genes() -> pd.DataFrame:
@@ -69,7 +71,6 @@ def load_all_genes() -> pd.DataFrame:
     """
     train_genes = load_train_genes().drop(columns='gex')
     test_genes = load_test_genes()
-    test_genes['cell_line'] = 3
     return pd.concat([train_genes, test_genes])
 
 
