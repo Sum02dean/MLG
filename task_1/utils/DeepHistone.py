@@ -19,6 +19,9 @@ from modified_DeepHistone_utils import get_dict_from_data
 from modified_DeepHistone_utils import save_model
 
 
+model_save_folder="../data/DeepHistone/"
+
+
 # Get genes, notive here test_genes not refer to final test dataset used for submission
 # but subset from whole training dataset 
 valid_chr=[5,20]
@@ -78,11 +81,6 @@ gex_dict = get_dict_from_data(train_index,valid_index,test_index,
 
 
 
-
-
-
-
-model_save_folder="../data/DeepHistone/"
 
 use_gpu = torch.cuda.is_available()
 batchsize=30#10000 # 20, 30
