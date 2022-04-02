@@ -205,6 +205,7 @@ class ModuleDense_opt1(nn.Module):
 	def __init__(self,SeqOrDnase='seq',bins=None):
 		super(ModuleDense_opt1, self).__init__()
 		self.bins=bins
+		print("self.bins",self.bins)
 		self.SeqOrDnase = SeqOrDnase
 		if self.SeqOrDnase== 'seq':
 			self.conv1 = nn.Sequential(
@@ -236,12 +237,16 @@ class ModuleDense_opt1(nn.Module):
 			seq = seq.view(n,1,4,w)
 		elif self.SeqOrDnase=='dnase':
 			seq = seq.view(n,1,7,w) # seq = seq.view(n,1,1,w)  here w=20 .bin size
+		print("self.seq.size",seq.size())
 		out = self.conv1(seq)
+		print("self.conv1.size",out.size())
 		out = self.block1(out)
+		print("self.block1.size",out.size())
 		out = self.trans1(out)
+		print("self.trans1.size",out.size())
 
 		n, c, h, w = out.size()
-		#print(self.SeqOrDnase+".out.size:",n,c,h,w)
+		print(self.SeqOrDnase+".out.size:",n,c,h,w)
 		out = out.view(n,c*h*w) 
 		return out
 
@@ -274,11 +279,13 @@ class NetDeepHistone_opt1(nn.Module):
 
 	def forward(self, seq, dns):
 		flat_seq = self.seq_map(seq)	
+		print("flat_seq.size:",flat_seq.size())
+
 		n, h, w = dns.size()
-		#print("dns.size:",n,h,w)
+		print("dns.size:",n,h,w)
 		dns = self.dns_map(dns) 
 		flat_dns = dns.view(n,-1)
-		#print("flat_dns.size",flat_dns.size())
+		print("flat_dns.size",flat_dns.size())
 		combined =torch.cat([flat_seq, flat_dns], 1)
 		print("combined.size:",combined.size())
 		out = self.linear_map(combined)
