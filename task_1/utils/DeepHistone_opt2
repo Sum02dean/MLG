@@ -9,13 +9,16 @@ from torch.optim import  Optimizer
 import math 
 from torch.nn.parameter import Parameter
 
+
+from DeepHistone import *
+
 class BasicBlock(nn.Module):
-	def __init__(self, in_planes, grow_rate,conv_ksize,conv_padsize):
+	def __init__(self, in_planes, grow_rate,):
 		super(BasicBlock, self).__init__()
 		self.block = nn.Sequential(
 			nn.BatchNorm2d(in_planes),
 			nn.ReLU(),
-			nn.Conv2d(in_planes, grow_rate, (1,conv_ksize), 1, (0,conv_padsize)), # here 9 and 4 are choosed to keep raw dimention intact 
+			nn.Conv2d(in_planes, grow_rate, (1,9), 1, (0,4)), # here 9 and 4 are choosed to keep raw dimention 
 			#nn.Dropout2d(0.2)
 		)
 	def forward(self, x):
@@ -23,40 +26,38 @@ class BasicBlock(nn.Module):
 		return torch.cat([x, out],1)
 
 class DenseBlock(nn.Module):
-	def __init__(self, nb_layers, in_planes, grow_rate,conv_ksize,conv_padsize):
+	def __init__(self, nb_layers, in_planes, grow_rate,):
 		super(DenseBlock, self).__init__()
 		layers = []
 		for i in range(nb_layers):
-			layers.append(BasicBlock(in_planes + i*grow_rate, grow_rate,conv_ksize,conv_padsize,))
+			layers.append(BasicBlock(in_planes + i*grow_rate, grow_rate,))
 		self.layer = nn.Sequential(*layers)
 	def forward(self, x):
 		return self.layer(x)
 
 
 class ModuleDense(nn.Module):
-	def __init__(self,SeqOrDnase='seq',bins=None,inside_ksize=[9,4]):
+	def __init__(self,SeqOrDnase='seq',bins=None):
 		super(ModuleDense, self).__init__()
 		self.bins=bins
-		self.conv_ksize,self.tran_ksize=inside_ksize
-		self.conv_padsize=self.conv_ksize//2
 		self.SeqOrDnase = SeqOrDnase
 		if self.SeqOrDnase== 'seq':
 			self.conv1 = nn.Sequential(
-			nn.Conv2d(1,128,(4,self.conv_ksize),1,(0,self.conv_padsize)),
+			nn.Conv2d(1,128,(4,9),1,(0,4)),
 			#nn.Dropout2d(0.2),
 			)
 		elif self.SeqOrDnase =='dnase'  :
 			self.conv1 = nn.Sequential(
-			nn.Conv2d(1,128,(7,self.conv_ksize),1,(0,self.conv_padsize)), # here 7 is number of histone marks
+			nn.Conv2d(1,128,(7,9),1,(0,4)), # here 7 is number of histone marks
 			#nn.Dropout2d(0.2),
 			)	
-		self.block1 = DenseBlock(3, 128, 128,self.conv_ksize,self.conv_padsize)	
+		self.block1 = DenseBlock(3, 128, 128)	
 		self.trans1 = nn.Sequential(
 			nn.BatchNorm2d(128+3*128),
 			nn.ReLU(),
 			nn.Conv2d(128+3*128, 256, (1,1),1),
 			#nn.Dropout2d(0.2),
-			nn.MaxPool2d((1,self.tran_ksize)),
+			nn.MaxPool2d((1,4)),
 		)
 		self.block2 = DenseBlock(3,256,256)
 		self.trans2 = nn.Sequential(
@@ -64,11 +65,11 @@ class ModuleDense(nn.Module):
 			nn.ReLU(),
 			nn.Conv2d(256+3*256, 512, (1,1),1),
 			#nn.Dropout2d(0.2),
-			nn.MaxPool2d((1,self.tran_ksize)), # default stride id 4 as kernel size
+			nn.MaxPool2d((1,4)), # default stride id 4 as kernel size
 		)
 		#self.out_size = 1000 // 4 // 4  * 512 here need to be changed 
 		#print(f"self.bins:{self.bins}")
-		self.out_size = self.bins // self.tran_ksize // self.tran_ksize  * 512
+		self.out_size = self.bins // 4 // 4  * 512
 
 	def forward(self, seq):
 		n, h, w = seq.size()
@@ -101,13 +102,13 @@ class NetDeepHistone(nn.Module):
 	:param nn: _description_
 	:type nn: _type_
 	"""
-	def __init__(self, bin_list,inside_ksize):
+	def __init__(self, bin_list=[2000,20]):
 		super(NetDeepHistone, self).__init__()
 		#print('DeepHistone(Dense,Dense) is used.')
 		self.seq_bins,self.histone_bins=bin_list
-		self.seq_map = ModuleDense(SeqOrDnase='seq',bins=self.seq_bins,inside_ksize=inside_ksize)
+		self.seq_map = ModuleDense(SeqOrDnase='seq',bins=self.seq_bins)
 		self.seq_len = self.seq_map.out_size
-		self.dns_map = ModuleDense(SeqOrDnase='dnase',bins=self.histone_bins,inside_ksize=inside_ksize)
+		self.dns_map = ModuleDense(SeqOrDnase='dnase',bins=self.histone_bins)
 		self.dns_len = self.dns_map.out_size	
 		combined_len = self.dns_len  + self.seq_len 
 		#print("combined_len:", combined_len)
@@ -147,7 +148,7 @@ class DeepHistone():
 
 	"""
 
-	def __init__(self,use_gpu,learning_rate=0.001,bin_list=[2000,20],inside_ksize=[9,4]):
+	def __init__(self,use_gpu,learning_rate=0.001,bin_list=[2000,20]):
 		"""_summary_
 
 		:param use_gpu: _description_
@@ -156,10 +157,8 @@ class DeepHistone():
 		:type learning_rate: float, optional
 		:param bin_list: number of bins (not bin size)  for DNA seq data and histone marks, defaults to [2000,20]
 		:type bin_list: list, optional
-		:param inside_ksize: kerner size for model (conv_ksize,trans_ksize=), defaults to [9,4]
-		:type inside_ksize: list, optional
 		"""
-		self.forward_fn = NetDeepHistone(bin_list=bin_list,inside_ksize=inside_ksize)  # here get general model
+		self.forward_fn = NetDeepHistone(bin_list=bin_list)  # here get general model
 		self.criterion  = nn.MSELoss() #nn.BCELoss() # change loss function suit for regression model 
 		self.optimizer  = optim.Adam(self.forward_fn.parameters(), lr=learning_rate, weight_decay = 0)
 		self.use_gpu    = use_gpu
