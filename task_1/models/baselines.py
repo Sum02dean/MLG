@@ -11,6 +11,7 @@ from sklearn.metrics import make_scorer
 from utils.data_loader import load_train_genes, load_test_genes
 from utils.dataset import HistoneDataset
 from utils.histone_loader import HISTONE_MODS
+from utils.stratification import chromosome_splits
 
 
 def set_seed(seed: int = 42):
@@ -24,17 +25,17 @@ def spearman_score(y, y_true):
 
 
 def train_and_predict(train_genes: pd.DataFrame, test_genes: pd.DataFrame, model, bin_size=50, flank_size=1000):
-    # Load models
-    custom_scorer = make_scorer(spearman_score, greater_is_better=True)
+    # custom_scorer = make_scorer(spearman_score, greater_is_better=True)
+    histones = ['DNase', 'H3K4me1', 'H3K4me3', 'H3K27ac', 'H3K27me3', 'H3K36me3']
 
     # Load train data
     train_dataset = HistoneDataset(train_genes, bin_size=bin_size, left_flank_size=flank_size,
-                                   right_flank_size=flank_size)
+                                   right_flank_size=flank_size, histone_mods=histones)
     train_dataloader = torch.utils.data.DataLoader(train_dataset, shuffle=True, batch_size=np.shape(train_genes)[0])
 
     # Load test data
     test_dataset = HistoneDataset(test_genes, bin_size=bin_size, left_flank_size=flank_size,
-                                  right_flank_size=flank_size)
+                                  right_flank_size=flank_size, histone_mods=histones)
     test_dataloader = torch.utils.data.DataLoader(test_dataset, shuffle=False, batch_size=np.shape(test_genes)[0])
 
     # Run train loader
@@ -61,6 +62,10 @@ def train_and_predict(train_genes: pd.DataFrame, test_genes: pd.DataFrame, model
         test_score = spearman_score(y_pred, y_test)
         print(f'Spearman Correlation Score test: {test_score}')
     return y_pred
+
+
+def rf_model():
+    return RandomForestRegressor(max_depth=5, n_estimators=18, bootstrap=True, n_jobs=-1, random_state=42)
 
 
 def random_forest(histone_mods: list[str] = HISTONE_MODS, bin_value_type: str = 'mean', bin_size: int = 100,
@@ -100,18 +105,19 @@ def create_submission(test_genes: pd.DataFrame, pred: np.array) -> None:
 
 if __name__ == '__main__':
     set_seed()
-    # train, test = chromosome_splits(test_size=0.2)
-    # train_and_predict(train, test, RandomForestRegressor(n_jobs=-1, random_state=42), bin_size=100, flank_size=1000)
+    train, test = chromosome_splits(test_size=0.2, train_cell_line=1)
+    train_and_predict(train, test, rf_model(), bin_size=100, flank_size=1000)
+    train, test = chromosome_splits(test_size=0.2, train_cell_line=2)
+    train_and_predict(train, test, rf_model(), bin_size=100, flank_size=1000)
 
-    train, test = load_train_genes(), load_test_genes()
-    y_pred = train_and_predict(train, test,
-                               RandomForestRegressor(max_depth=30, n_estimators=300, bootstrap=True, n_jobs=-1,
-                                                     random_state=42), bin_size=100,
-                               flank_size=1000)
-    create_submission(test_genes=test, pred=y_pred)
-    # train_genes = load_train_genes()
-    # test_genes = load_test_genes()
-    # n_genes_train, _ = np.shape(train_genes)
-    # n_genes_test, _ = np.shape(test_genes)
-    # random_forest(flank_size=1000, bin_size=100)
-    # analyse_window_and_bin()
+    train, test = chromosome_splits(cell_line=1, test_size=0.2)
+    train_and_predict(train, test, rf_model(), bin_size=100, flank_size=1000)
+    train, test = chromosome_splits(cell_line=2, test_size=0.2)
+    train_and_predict(train, test, rf_model(), bin_size=100, flank_size=1000)
+
+    # train, test = load_train_genes(), load_test_genes()
+    # y_pred = train_and_predict(train, test,
+    #                            RandomForestRegressor(max_depth=30, n_estimators=300, bootstrap=True, n_jobs=-1,
+    #                                                  random_state=42), bin_size=100,
+    #                            flank_size=1000)
+    # create_submission(test_genes=test, pred=y_pred)
