@@ -105,12 +105,12 @@ class NetDeepHistone(nn.Module):
 		super(NetDeepHistone, self).__init__()
 		#print('DeepHistone(Dense,Dense) is used.')
 		self.use_seq=use_seq
+		self.seq_bins,self.histone_bins=bin_list
 
 		self.dns_map = ModuleDense(SeqOrDnase='dnase',bins=self.histone_bins,inside_ksize=inside_ksize)
 		self.dns_len = self.dns_map.out_size	
-		
+
 		if self.use_seq:
-			self.seq_bins,self.histone_bins=bin_list
 			self.seq_map = ModuleDense(SeqOrDnase='seq',bins=self.seq_bins,inside_ksize=inside_ksize)
 			self.seq_len = self.seq_map.out_size
 			combined_len = self.dns_len  + self.seq_len 

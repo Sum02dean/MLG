@@ -22,13 +22,17 @@ from modified_DeepHistone_utils import get_dict_from_data
 from modified_DeepHistone_utils import save_model
 
 
-model_save_folder="../data/DeepHistone/"
-prefix="basic-model-"
 
+model_save_folder="../data/DeepHistone/"
+prefix="basic-model-"#"opt1-model-" #"basic-model-"
 time_stamp=time.strftime("%Y%m%d-%H%M%S")
 Log_Format = "%(levelname)s %(asctime)s - %(message)s"
 logging.basicConfig(level=logging.INFO, filename=f"{model_save_folder}{prefix}time{time_stamp}.log",
                     filemode="a",format=Log_Format)
+
+
+use_seq=False
+logging.info(f"model:{prefix}use_seq:{use_seq}")
 
 
 
@@ -93,6 +97,7 @@ gex_dict = get_dict_from_data(train_index,valid_index,test_index,
 
 
 
+
 use_gpu = torch.cuda.is_available()
 batchsize=30#10000 # 20, 30
 epochs=3 #10 #50
@@ -104,7 +109,7 @@ logging.info(f"conv_ksize:{conv_ksize}tran_ksize:{tran_ksize}")
 logging.info(f'Begin training model...batch_size:{batchsize}epochs:{epochs}')
 
 if prefix=="basic-model-":#"opt1-model-" "basic-model-"
-	model = DeepHistone(use_gpu,bin_list=[seq_bins,histone_bins],inside_ksize=[conv_ksize,tran_ksize])
+	model = DeepHistone(use_gpu,use_seq=use_seq,bin_list=[seq_bins,histone_bins],inside_ksize=[conv_ksize,tran_ksize])
 elif prefix=="opt1-model-":
 	model = DeepHistone_opt1(use_gpu,bin_list=[seq_bins,histone_bins])
 
