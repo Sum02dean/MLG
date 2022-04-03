@@ -18,8 +18,13 @@ module load volta nvidia/cuda11.2-cudnn8.1.0
 
 source activate /data/tfang/conda-envs/py309_MLG
 
-cd /net/cephfs/shares/von-mering.imls.uzh/tao/MLG/task_/utils # just in case python is not smart enough 
+cd /net/cephfs/shares/von-mering.imls.uzh/tao/MLG/task_1/utils # just in case python is not smart enough 
 
 
-#python DeepHistone_runner.py --model_prefix "basic-model-" --use_seq True --left_flank_size 1000 --histone_bin_size 20 --conv_ksize 9 --tran_ksize 4 --batchsize 30 --epochs 3
-python DeepHistone_runner.py --model_prefix "basic-model-" --use_seq False --left_flank_size 1000 --histone_bin_size 20 --conv_ksize 9 --tran_ksize 4 --batchsize 30 --epochs 30
+#python DeepHistone_runner.py --model_prefix "basic-model-" --use_seq 1 --left_flank_size 1000 --histone_bin_size 20 --conv_ksize 9 --tran_ksize 4 --batchsize 30 --epochs 30
+#python DeepHistone_runner.py --model_prefix "basic-model-" --use_seq 0 --left_flank_size 1000 --histone_bin_size 20 --conv_ksize 9 --tran_ksize 4 --batchsize 30 --epochs 30
+
+#python DeepHistone_runner.py --model_prefix "basic-model-" --use_seq 1 --left_flank_size 1000 --histone_bin_size 1 --conv_ksize 9 --tran_ksize 4 --batchsize 30 --epochs 30
+
+#python DeepHistone_runner.py --model_prefix "basic-model-" --use_seq 0 --left_flank_size 1000 --histone_bin_size 20 --conv_ksize 16 --tran_ksize 4 --batchsize 30 --epochs 30
+python DeepHistone_runner.py --model_prefix "basic-model-" --use_seq 0 --left_flank_size 1000 --histone_bin_size 1 --conv_ksize 9 --tran_ksize 4 --batchsize 30 --epochs 30

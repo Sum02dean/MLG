@@ -26,7 +26,7 @@ from modified_DeepHistone_utils import get_compplex_prefix
 
 parser = argparse.ArgumentParser(description='DeepHistone_runner')
 parser.add_argument('-m','--model_prefix', type=str, help='prefix used for model name  ')
-parser.add_argument('-s','--use_seq', action=argparse.BooleanOptionalAction, help='use seq data or not ')
+parser.add_argument('-s','--use_seq', type=int, help='use seq data or not ')
 parser.add_argument('-l','--left_flank_size', type=int, help='window size on left side ')
 parser.add_argument('-i','--histone_bin_size', type=int, help='bin size for histone data ')
 parser.add_argument('-c','--conv_ksize', type=int, help='kernel size for convolutoin laler ')
@@ -44,8 +44,10 @@ model_save_folder="../data/DeepHistone/"
 model_prefix=args.model_prefix #"opt1-model-" #"basic-model-"
 
 
-
-use_seq=args.use_seq
+if args.use_seq==1:
+	use_seq=True
+elif args.use_seq==0:
+	use_seq=False
 
 
 left_flank_size = args.left_flank_size#500#1000
