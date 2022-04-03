@@ -1,3 +1,4 @@
+import argpars
 from typing import final
 import numpy as np
 import torch
@@ -23,16 +24,64 @@ from modified_DeepHistone_utils import save_model
 
 
 
+parser = argparse.ArgumentParser(description='DeepHistone_runner')
+parser.add_argument('-p','--prefix', type=bool, help='prefix used for model name  ')
+parser.add_argument('-s','--use_seq', type=bool, help='use seq data or not ')
+parser.add_argument('-l','--left_flank_size', type=int, help='window size on left side ')
+parser.add_argument('-h','--histone_bin_size', type=int, help='bin size for histone data ')
+parser.add_argument('-c','--conv_ksize', type=int, help='kernel size for convolutoin laler ')
+parser.add_argument('-t','--tran_ksize', type=int, help='kernel size for tran layer ')
+parser.add_argument('-b','--batchsize', type=int, help='batch size to train model ')
+parser.add_argument('-e','--epochs', type=int, help='train model epochs times ')
+
+
+args = parser.parse_args()
+
+
+
+
 model_save_folder="../data/DeepHistone/"
-prefix="basic-model-"#"opt1-model-" #"basic-model-"
+prefix=args.prefix #"opt1-model-" #"basic-model-"
+
+
+
+use_seq=args.use_seq
+
+
+left_flank_size = args.left_flank_size#500#1000
+right_flank_size = left_flank_size#500#1000
+seq_bin_size=left_flank_size+right_flank_size
+histone_bin_size = args.histone_bin_size #100 ,20 ,5,1
+seq_bins=seq_bin_size
+assert seq_bin_size % histone_bin_size==0
+histone_bins=int(seq_bin_size/histone_bin_size)
+
+conv_ksize,tran_ksize=args.conv_ksize,args.tran_ksize 
+
+
+batchsize=args.batchsize#10000 # 20, 30,50
+epochs=args.epochs #50
+
+use_gpu = torch.cuda.is_available()
+
+
+prefix=get_compplex_prefix(prefix=prefix,use_seq=use_seq,
+                           left_flank_size =left_flank_size,histone_bin_size=histone_bin_size,
+                           conv_ksize=conv_ksize,tran_ksize=tran_ksize,
+                           batchsize=batchsize,epochs=epochs,
+                           use_gpu=use_gpu,)
+
+
+
+
+
+
 time_stamp=time.strftime("%Y%m%d-%H%M%S")
 Log_Format = "%(levelname)s %(asctime)s - %(message)s"
 logging.basicConfig(level=logging.INFO, filename=f"{model_save_folder}{prefix}time{time_stamp}.log",
                     filemode="a",format=Log_Format)
 
 
-use_seq=False
-logging.info(f"model:{prefix}use_seq:{use_seq}")
 
 
 
@@ -54,16 +103,6 @@ n_genes_test, _ = np.shape(test_genes)
 logging.info(f"train_genes.shape:{train_genes.shape}valid_genes.shape:{valid_genes.shape}test_genes.shape:{test_genes.shape}")
 
 
-# set some hyper-parameters
-left_flank_size = 1000#500#1000
-right_flank_size = 1000 #500#1000
-seq_bin_size=left_flank_size+right_flank_size
-histone_bin_size = 100 #100,1
-
-seq_bins=seq_bin_size
-assert seq_bin_size % histone_bin_size==0
-histone_bins=int(seq_bin_size/histone_bin_size)
-logging.info(f"seq_bins:{seq_bins}histone_bins:{histone_bins}")
 
 # Load train data
 train_dataloader = torch.utils.data.DataLoader(
@@ -96,14 +135,6 @@ gex_dict = get_dict_from_data(train_index,valid_index,test_index,
 
 
 
-
-
-use_gpu = torch.cuda.is_available()
-batchsize=30#10000 # 20, 30
-epochs=3 #10 #50
-
-conv_ksize,tran_ksize=9,4 
-logging.info(f"conv_ksize:{conv_ksize}tran_ksize:{tran_ksize}")
 
 
 logging.info(f'Begin training model...batch_size:{batchsize}epochs:{epochs}')
@@ -155,9 +186,9 @@ logging.info('Spearman Correlation Score: {}'.format(test_score))
 logging.info('Begin saving...')
 np.savetxt(f"{model_save_folder}label.txt", valid_gex, fmt='%d', delimiter='\t')
 np.savetxt(f"{model_save_folder}pred.txt", valid_pred, fmt='%.4f', delimiter='\t')
-save_model(model=best_model,epoch=epoch,seq_bins=seq_bins,histone_bins=histone_bins,
+save_model(model=best_model,epoch=epoch,
             model_save_folder=model_save_folder,prefix=prefix,suffix="best")
-save_model(model=best_model,epoch=epoch,seq_bins=seq_bins,histone_bins=histone_bins,
+save_model(model=best_model,epoch=epoch,
             model_save_folder=model_save_folder,prefix=prefix,suffix="final")
 
 

@@ -53,12 +53,19 @@ def get_dict_from_data(train_index,valid_index,test_index,train,valid,test):
 	return(return_dict)
 
 
-def save_model(model,epoch,seq_bins,histone_bins,model_save_folder="../data/DeepHistone/",prefix="",suffix=""):
+def save_model(model,epoch,model_save_folder="../data/DeepHistone/",prefix="",suffix=""):
     time_stamp=time.strftime("%Y%m%d-%H%M%S")
-    model.save_model(f"{model_save_folder}{prefix}seqbins{seq_bins}-histonebins{histone_bins}-time{time_stamp}-epoch{epoch}-model-{suffix}.txt")
+    model.save_model(f"{model_save_folder}{prefix}time{time_stamp}-epoch{epoch}-model-{suffix}.txt")
 
 
 
+def get_compplex_prefix(**kwargs):
+    complex_prefix=""
+    for k, v in kwargs.items():
+        complex_prefix += f"{k}-{v}-"
+        
+    return(complex_prefix)
+    
 
 
 def loadRegions(regions_indexs,dna_dict,dns_dict,label_dict,):
