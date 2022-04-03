@@ -137,4 +137,4 @@ dependencies:
     - torch-summary==1.4.5
     - urllib3==1.26.9
     - xgboost==1.5.2
-prefix: /mnt/mnemo5/tao/anaconda3/envs/py309_MLG
+prefix: /data/tfang/conda-envs/py309_MLG
