@@ -5,12 +5,11 @@ import numpy as np
 import pandas as pd
 import scipy
 import torch
+from sklearn import svm, clone
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import make_scorer
 
 from utils.data_loader import load_train_genes, load_test_genes
 from utils.dataset import HistoneDataset
-from utils.histone_loader import HISTONE_MODS
 from utils.stratification import chromosome_splits
 
 
@@ -24,19 +23,51 @@ def spearman_score(y, y_true):
     return scipy.stats.spearmanr(y, y_true)[0]
 
 
+def dataloader(genes, histones=None, bin_size=50, flank_size=1000, batch_size=None):
+    if batch_size is None:
+        batch_size = np.shape(genes)[0]
+    if histones is None:
+        histones = ['DNase', 'H3K4me1', 'H3K4me3', 'H3K27ac', 'H3K27me3', 'H3K36me3']
+    train_dataset = HistoneDataset(genes, bin_size=bin_size, left_flank_size=flank_size,
+                                   right_flank_size=flank_size, histone_mods=histones)
+    return torch.utils.data.DataLoader(train_dataset, shuffle=True, batch_size=batch_size)
+
+
+def cross_validate(base_model, train_cell_line=1, histones=None, bin_size=50, flank_size=1000,
+                   n_folds: int = 4) -> float:
+    train_genes, test_genes = chromosome_splits(test_size=0.2, train_cell_line=train_cell_line)
+    train_loader = dataloader(train_genes, histones, bin_size, flank_size, np.shape(train_genes)[0] // n_folds)
+    test_loader = dataloader(test_genes, histones, bin_size, flank_size, np.shape(test_genes)[0] // n_folds)
+
+    val_scores = 0
+    for i, ((x_train, y_train), (x_val, y_val)) in enumerate(zip(train_loader, test_loader)):
+        if i == n_folds:
+            break
+        n_genes_train, n_features, n_bins = x_train.shape
+        n_genes_val, _, _ = x_val.shape
+
+        x_train = x_train.reshape(n_genes_train, n_features * n_bins)
+        x_val = x_val.reshape(n_genes_val, n_features * n_bins)
+
+        model = clone(base_model)
+        model.fit(x_train, y_train)
+        y_pred_train, y_pred_val = model.predict(x_train), model.predict(x_val)
+
+        train_score, val_score = spearman_score(y_pred_train, y_train), spearman_score(y_pred_val, y_val)
+        # print(f'train {train_score}, val {val_score}')
+        val_scores += val_score
+
+    return val_scores / n_folds
+
+
 def train_and_predict(train_genes: pd.DataFrame, test_genes: pd.DataFrame, model, bin_size=50, flank_size=1000):
     # custom_scorer = make_scorer(spearman_score, greater_is_better=True)
     histones = ['DNase', 'H3K4me1', 'H3K4me3', 'H3K27ac', 'H3K27me3', 'H3K36me3']
 
-    # Load train data
-    train_dataset = HistoneDataset(train_genes, bin_size=bin_size, left_flank_size=flank_size,
-                                   right_flank_size=flank_size, histone_mods=histones)
-    train_dataloader = torch.utils.data.DataLoader(train_dataset, shuffle=True, batch_size=np.shape(train_genes)[0])
-
-    # Load test data
-    test_dataset = HistoneDataset(test_genes, bin_size=bin_size, left_flank_size=flank_size,
-                                  right_flank_size=flank_size, histone_mods=histones)
-    test_dataloader = torch.utils.data.DataLoader(test_dataset, shuffle=False, batch_size=np.shape(test_genes)[0])
+    train_dataloader = dataloader(train_genes, histones=histones, bin_size=bin_size, flank_size=flank_size,
+                                  batch_size=np.shape(train_genes)[0])
+    test_dataloader = dataloader(test_genes, histones=histones, bin_size=bin_size, flank_size=flank_size,
+                                 batch_size=np.shape(test_genes)[0])
 
     # Run train loader
     (x_train, y_train) = next(iter(train_dataloader))
@@ -64,31 +95,13 @@ def train_and_predict(train_genes: pd.DataFrame, test_genes: pd.DataFrame, model
     return y_pred
 
 
-def rf_model():
-    return RandomForestRegressor(max_depth=5, n_estimators=18, bootstrap=True, n_jobs=-1, random_state=42)
+def rf_model(max_depth=20, n_estimators=30, bootstrap=True):
+    return RandomForestRegressor(max_depth=max_depth, n_estimators=n_estimators, bootstrap=bootstrap, n_jobs=-1,
+                                 random_state=42)
 
 
-def random_forest(histone_mods: list[str] = HISTONE_MODS, bin_value_type: str = 'mean', bin_size: int = 100,
-                  flank_size: int = 1000):
-    print(f'Random Forest, flank {flank_size}, bin {bin_size}, {bin_value_type} bin values, histones: {histone_mods}')
-    rf_params = {
-        'max_depth': [30],
-        'n_estimators': [300],
-        'bootstrap': [True],
-    }
-    # train_and_cross_validate(RandomForestRegressor(n_jobs=-1, random_state=42), rf_params, histone_mods, bin_value_type,
-    #                          bin_size, flank_size)
-    # All histones: Spearman correlation score 0.7511
-
-
-def support_vector_machine(histone_mods: list[str] = HISTONE_MODS, bin_value_type: str = 'mean', bin_size: int = 100,
-                           flank_size: int = 1000):
-    print(f'SVM, {bin_value_type} bin values, histones:{histone_mods}')
-    svm_params = {
-        'kernel': ['rbf'],
-        'C': [10]}
-    # train_and_cross_validate(svm.SVR(), svm_params, histone_mods, bin_value_type, bin_size, flank_size)
-    # All histones: Spearman correlation score 0.7328
+def svm_model(kernel: str = 'rbf', c: int = 1):
+    return svm.SVR(kernel=kernel, C=c)
 
 
 def create_submission(test_genes: pd.DataFrame, pred: np.array) -> None:
@@ -103,21 +116,18 @@ def create_submission(test_genes: pd.DataFrame, pred: np.array) -> None:
     test_genes[['gene_name', 'gex_predicted']].to_csv(save_path, compression=compression_options)
 
 
+def best_rf():
+    train_genes, test_genes = chromosome_splits(test_size=0.2)
+    train_and_predict(train_genes, test_genes, rf_model(), flank_size=500, bin_size=1000)
+    print(cross_validate(rf_model(), train_cell_line=1, flank_size=500, bin_size=1000))
+    print(cross_validate(rf_model(), train_cell_line=1, flank_size=500, bin_size=1000))
+
+    train, test = load_train_genes(), load_test_genes()
+    y_pred = train_and_predict(train, test, rf_model(), bin_size=500, flank_size=1000)
+    create_submission(test_genes=test, pred=y_pred)
+
+
 if __name__ == '__main__':
     set_seed()
-    train, test = chromosome_splits(test_size=0.2, train_cell_line=1)
-    train_and_predict(train, test, rf_model(), bin_size=100, flank_size=1000)
-    train, test = chromosome_splits(test_size=0.2, train_cell_line=2)
-    train_and_predict(train, test, rf_model(), bin_size=100, flank_size=1000)
-
-    train, test = chromosome_splits(cell_line=1, test_size=0.2)
-    train_and_predict(train, test, rf_model(), bin_size=100, flank_size=1000)
-    train, test = chromosome_splits(cell_line=2, test_size=0.2)
-    train_and_predict(train, test, rf_model(), bin_size=100, flank_size=1000)
-
-    # train, test = load_train_genes(), load_test_genes()
-    # y_pred = train_and_predict(train, test,
-    #                            RandomForestRegressor(max_depth=30, n_estimators=300, bootstrap=True, n_jobs=-1,
-    #                                                  random_state=42), bin_size=100,
-    #                            flank_size=1000)
-    # create_submission(test_genes=test, pred=y_pred)
+    best_rf()
+    # cross_validate(rf_model())

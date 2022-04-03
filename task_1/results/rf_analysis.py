@@ -1,5 +1,24 @@
-from models.baselines import set_seed, random_forest
+from models.baselines import set_seed, rf_model, cross_validate
 from utils.histone_loader import HISTONE_MODS
+
+
+def rf_params():
+    # max depth 20 and est 30
+    set_seed(42)
+    for md in [11, 20, 30]:
+        for n_est in [15, 30, 60]:
+            cv_score1 = cross_validate(rf_model(max_depth=md, n_estimators=n_est), train_cell_line=1)
+            cv_score2 = cross_validate(rf_model(max_depth=md, n_estimators=n_est), train_cell_line=2)
+            print(f'MD {md} EST {n_est}: {cv_score1:.4f} {cv_score2:.4f}')
+
+
+def window_params():
+    set_seed(42)
+    for flank in [500, 1000, 2000, 3000]:
+        for bin in [500, 1000]:
+            cv_score1 = cross_validate(rf_model(), train_cell_line=1, flank_size=flank, bin_size=bin)
+            cv_score2 = cross_validate(rf_model(), train_cell_line=2, flank_size=flank, bin_size=bin)
+            print(f'flank {flank} bin {bin}: {cv_score1:.4f} {cv_score2:.4f}')
 
 
 def analyse_histone_contribution():
@@ -24,8 +43,8 @@ def analyse_histone_contribution():
     ALL std:    0.7481
     """
     set_seed()
-    for histone in HISTONE_MODS:
-        random_forest(histone_mods=[histone])
+    # for histone in HISTONE_MODS:
+    #     random_forest(histone_mods=[histone])
 
 
 def analyse_window_and_bin():
@@ -52,6 +71,10 @@ def analyse_window_and_bin():
         'window_size': [5000],
         'bin_size': [200],
     }
-    for flank in params['window_size']:
-        for bin_size in params['bin_size']:
-            random_forest(flank_size=flank, bin_size=bin_size)
+    # for flank in params['window_size']:
+    #     for bin_size in params['bin_size']:
+    #         random_forest(flank_size=flank, bin_size=bin_size)
+
+
+if __name__ == '__main__':
+    window_params()
