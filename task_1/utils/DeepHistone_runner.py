@@ -1,4 +1,4 @@
-import argpars
+import argparse
 from typing import final
 import numpy as np
 import torch
@@ -21,14 +21,14 @@ from modified_DeepHistone_utils import model_train,model_eval,model_predict
 from modified_DeepHistone_utils import get_reshaped_data
 from modified_DeepHistone_utils import get_dict_from_data
 from modified_DeepHistone_utils import save_model
-
+from modified_DeepHistone_utils import get_compplex_prefix
 
 
 parser = argparse.ArgumentParser(description='DeepHistone_runner')
-parser.add_argument('-p','--prefix', type=bool, help='prefix used for model name  ')
-parser.add_argument('-s','--use_seq', type=bool, help='use seq data or not ')
+parser.add_argument('-m','--model_prefix', type=str, help='prefix used for model name  ')
+parser.add_argument('-s','--use_seq', action=argparse.BooleanOptionalAction, help='use seq data or not ')
 parser.add_argument('-l','--left_flank_size', type=int, help='window size on left side ')
-parser.add_argument('-h','--histone_bin_size', type=int, help='bin size for histone data ')
+parser.add_argument('-i','--histone_bin_size', type=int, help='bin size for histone data ')
 parser.add_argument('-c','--conv_ksize', type=int, help='kernel size for convolutoin laler ')
 parser.add_argument('-t','--tran_ksize', type=int, help='kernel size for tran layer ')
 parser.add_argument('-b','--batchsize', type=int, help='batch size to train model ')
@@ -41,7 +41,7 @@ args = parser.parse_args()
 
 
 model_save_folder="../data/DeepHistone/"
-prefix=args.prefix #"opt1-model-" #"basic-model-"
+model_prefix=args.model_prefix #"opt1-model-" #"basic-model-"
 
 
 
@@ -65,7 +65,7 @@ epochs=args.epochs #50
 use_gpu = torch.cuda.is_available()
 
 
-prefix=get_compplex_prefix(prefix=prefix,use_seq=use_seq,
+prefix=get_compplex_prefix(prefix=copy.deepcopy(model_prefix),use_seq=use_seq,
                            left_flank_size =left_flank_size,histone_bin_size=histone_bin_size,
                            conv_ksize=conv_ksize,tran_ksize=tran_ksize,
                            batchsize=batchsize,epochs=epochs,
@@ -138,10 +138,10 @@ gex_dict = get_dict_from_data(train_index,valid_index,test_index,
 
 
 logging.info(f'Begin training model...batch_size:{batchsize}epochs:{epochs}')
-
-if prefix=="basic-model-":#"opt1-model-" "basic-model-"
+print(model_prefix)
+if model_prefix=="basic-model-":#"opt1-model-" "basic-model-"
 	model = DeepHistone(use_gpu,use_seq=use_seq,bin_list=[seq_bins,histone_bins],inside_ksize=[conv_ksize,tran_ksize])
-elif prefix=="opt1-model-":
+elif model_prefix=="opt1-model-":
 	model = DeepHistone_opt1(use_gpu,bin_list=[seq_bins,histone_bins])
 
 best_model = copy.deepcopy(model)
