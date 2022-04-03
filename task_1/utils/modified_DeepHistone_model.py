@@ -101,15 +101,21 @@ class NetDeepHistone(nn.Module):
 	:param nn: _description_
 	:type nn: _type_
 	"""
-	def __init__(self, bin_list,inside_ksize):
+	def __init__(self,use_seq,bin_list,inside_ksize):
 		super(NetDeepHistone, self).__init__()
 		#print('DeepHistone(Dense,Dense) is used.')
-		self.seq_bins,self.histone_bins=bin_list
-		self.seq_map = ModuleDense(SeqOrDnase='seq',bins=self.seq_bins,inside_ksize=inside_ksize)
-		self.seq_len = self.seq_map.out_size
+		self.use_seq=use_seq
+
 		self.dns_map = ModuleDense(SeqOrDnase='dnase',bins=self.histone_bins,inside_ksize=inside_ksize)
 		self.dns_len = self.dns_map.out_size	
-		combined_len = self.dns_len  + self.seq_len 
+		
+		if self.use_seq:
+			self.seq_bins,self.histone_bins=bin_list
+			self.seq_map = ModuleDense(SeqOrDnase='seq',bins=self.seq_bins,inside_ksize=inside_ksize)
+			self.seq_len = self.seq_map.out_size
+			combined_len = self.dns_len  + self.seq_len 
+		else:
+			combined_len = self.dns_len 
 		#print("combined_len:", combined_len)
 		self.linear_map = nn.Sequential(
 			nn.Dropout(0.5),
@@ -123,19 +129,23 @@ class NetDeepHistone(nn.Module):
 		)
 
 	def forward(self, seq, dns):
-		seq_n, seq_h, seq_w = seq.size()
-		#print("seq.size:",seq_n,seq_h,seq_w)
 		dns_n, dns_h, dns_w = dns.size()
 		#print("dns.size:",dns_n,dns_h,dns_w)
-
-		flat_seq = self.seq_map(seq)	
-		#print("flat_seq.size:",flat_seq.size())
 		dns = self.dns_map(dns) 
 		#print("dns.size:",dns.size())
 		flat_dns = dns.view(dns_n,-1) # so here actully is strang , why seq not needed flatting ?
 		# okay , so this step is acutlly not neceseary 
 		#print("flat_dns.size:",flat_dns.size())
-		combined =torch.cat([flat_seq, flat_dns], 1)
+		if self.use_seq:
+			seq_n, seq_h, seq_w = seq.size()
+			flat_seq = self.seq_map(seq)	
+			#print("flat_seq.size:",flat_seq.size())
+			#print("seq.size:",seq_n,seq_h,seq_w)
+			combined =torch.cat([flat_seq, flat_dns], 1)
+		else:
+			combined=flat_dns
+	
+		
 		#print("combined.size:",combined.size())
 		out = self.linear_map(combined)
 		return out
@@ -147,7 +157,7 @@ class DeepHistone():
 
 	"""
 
-	def __init__(self,use_gpu,learning_rate=0.001,bin_list=[2000,20],inside_ksize=[9,4]):
+	def __init__(self,use_gpu,learning_rate=0.001,use_seq=True,bin_list=[2000,20],inside_ksize=[9,4]):
 		"""_summary_
 
 		:param use_gpu: _description_
@@ -159,7 +169,7 @@ class DeepHistone():
 		:param inside_ksize: kerner size for model (conv_ksize,trans_ksize=), defaults to [9,4]
 		:type inside_ksize: list, optional
 		"""
-		self.forward_fn = NetDeepHistone(bin_list=bin_list,inside_ksize=inside_ksize)  # here get general model
+		self.forward_fn = NetDeepHistone(use_seq=use_seq,bin_list=bin_list,inside_ksize=inside_ksize)  # here get general model
 		self.criterion  = nn.MSELoss() #nn.BCELoss() # change loss function suit for regression model 
 		self.optimizer  = optim.Adam(self.forward_fn.parameters(), lr=learning_rate, weight_decay = 0)
 		self.use_gpu    = use_gpu
