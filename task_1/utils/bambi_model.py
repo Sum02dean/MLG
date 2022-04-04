@@ -65,3 +65,15 @@ print(spearman_scoring(preds, y_test))
 # 0.7415649535231114 intra cell-line splits
 # 0.7112918863640766 inter cell-line splits
 
+def create_submission(test_genes: pd.DataFrame, pred: np.array) -> None:
+    save_dir = '../data/submissions'
+    file_name = 'gex_predicted.csv'  # DO NOT CHANGE THIS
+    zip_name = "Kasak_Liine_Project1.zip"
+    save_path = f'{save_dir}/{zip_name}'
+    compression_options = dict(method="zip", archive_name=file_name)
+
+    test_genes['gex_predicted'] = pred.tolist()
+    print(f'Saving submission to path {os.path.abspath(save_dir)}')
+    test_genes[['gene_name', 'gex_predicted']].to_csv(save_path, compression=compression_options)
+
+    
