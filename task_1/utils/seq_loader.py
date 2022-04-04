@@ -1,6 +1,5 @@
 import os
 
-import numpy as np
 import pyfasta
 
 GENOME_FILE = f'../data/hg38.fa'

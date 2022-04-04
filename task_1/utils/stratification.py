@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import GroupShuffleSplit
 from sklearn.model_selection import train_test_split
-from data_loader import load_train_genes
+from utils.data_loader import load_train_genes
 
 
 def random_splits(test_size=0.3):
@@ -47,12 +47,12 @@ def cell_line_splits():
     return x1, x2
 
 
-def chromosome_splits(cell_line=None, test_size=0.3):
+def chromosome_splits(cell_line=None, test_size=0.3, train_cell_line: int = None):
     """Generates splits between chromosomes
 
     :param cell_line:
         if None: Mutually exclusive splits will be made with cell-line 1 & 2. Cell-line mixing allowed
-        if 1: mutually exclusive chr splits will be made across cell-line 1. Celll-line mixing disallowed,
+        if 1: mutually exclusive chr splits will be made across cell-line 1. Cell-line mixing disallowed,
         if 2: mutually exclusive chr splits will be made across cell-line 2 . Cell-line mixing disallowed,
         defaults to None
     :type cell_line: str or None, optional
@@ -83,4 +83,10 @@ def chromosome_splits(cell_line=None, test_size=0.3):
     (train_idx, test_idx) = next(gss.split(X=df, y=None, groups=groups))
     y_train = df.iloc[train_idx]
     y_test = df.iloc[test_idx]
+    if train_cell_line is not None:
+        assert train_cell_line in [1, 2]
+        y_train = y_train[y_train.cell_line == train_cell_line]
+        test_cell_line = 2 if train_cell_line == 1 else 1
+        y_test = y_test[y_test.cell_line == test_cell_line]
+
     return y_train, y_test
