@@ -27,10 +27,15 @@ train_genes, _ = chromosome_splits(cell_line=1, test_size=0.1)
 _, test_genes = chromosome_splits(cell_line=2, test_size=0.1)
 all_genes = pd.concat([train_genes, test_genes])
 
+# Get sumbission X data
+total_genes = load_all_genes()
+X3_genes = total_genes[total_genes.chr == 1]
+
 # Sizes
 n_genes_train, _ = np.shape(train_genes)
 n_genes_test, _ = np.shape(test_genes)
 n_genes_all, _ = np.shape(all_genes)
+n_genes_X3, _ = np.shape(X3_genes)
 
 # Load train data
 train_dataloader = torch.utils.data.DataLoader(
@@ -40,9 +45,13 @@ train_dataloader = torch.utils.data.DataLoader(
 test_dataloader = torch.utils.data.DataLoader(
     HistoneDataset(test_genes), shuffle=False, batch_size=n_genes_test)
 
-# Loadl all data
+# Load train all data
 all_dataloader = torch.utils.data.DataLoader(
     HistoneDataset(all_genes), shuffle=False, batch_size=n_genes_all)
+
+# Load X3 data
+X3_dataloader = torch.utils.data.DataLoader(
+    HistoneDataset(X3_genes), shuffle=False, batch_size=n_genes_X3)
 
 
 # Run train loader
@@ -60,6 +69,11 @@ x_test = x_test.reshape(n_genes_test, n_features * n_bins)
 n_genes_all, _, _ = x_all.shape
 x_all = x_all.reshape(n_genes_all, n_features * n_bins)
 
+# Run X3 loader
+(X3_test) = next(iter(X3_dataloader))
+n_genes_X3, _, _ = X3_test.shape
+X3_test = X3_test.reshape(n_genes_X3, n_features * n_bins)
+
 # Save csv
 if SAVE_DATA:
     # Train
@@ -74,6 +88,8 @@ if SAVE_DATA:
     to_pandas(x_all).to_csv('x_all.csv')
     to_pandas(y_all).to_csv('y_all.csv')
 
+    # X3 data
+    to_pandas(X3_test).to_csv('X3_test.csv')
     print("saving complete")
 
 
