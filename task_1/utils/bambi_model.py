@@ -46,10 +46,10 @@ x_train = pd.read_csv('x_train.csv', index_col=0)
 y_train = pd.read_csv('y_train.csv', index_col=0)
 x_train['y'] = y_train
 
-# inport test data
-x_test = pd.read_csv('x_test.csv', index_col=0)
-y_test = pd.read_csv('y_test.csv', index_col=0)
-x_test['y'] = y_test
+# # inport test data
+# x_test = pd.read_csv('x_test.csv', index_col=0)
+# y_test = pd.read_csv('y_test.csv', index_col=0)
+# x_test['y'] = y_test
 
 x_train.columns = ['col_{}'.format(i) for i in x_train.columns[:-1].values] + ['y']
 x_test.columns = ['col_{}'.format(i) for i in x_test.columns.values] + ['y']
