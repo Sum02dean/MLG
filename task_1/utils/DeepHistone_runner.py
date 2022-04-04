@@ -89,9 +89,13 @@ logging.basicConfig(level=logging.INFO, filename=f"{model_save_folder}{prefix}ti
 
 # Get genes, notive here test_genes not refer to final test dataset used for submission
 # but subset from whole training dataset 
-valid_chr=[5,20]
-test_chr=[2]
+# valid_chr=[5,20]
+# test_chr=[2]
+# train_chr=[i for i in range(1,23) if (i not in valid_chr+test_chr)]
+valid_chr=[5,10,15,20]
+test_chr=[2,18]
 train_chr=[i for i in range(1,23) if (i not in valid_chr+test_chr)]
+
 logging.info(f"train_chr:{train_chr}valid_chr:{valid_chr}test_chr:{test_chr}")
 
 all_genes = load_train_genes()
