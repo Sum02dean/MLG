@@ -1,3 +1,4 @@
+import pandas as pd
 import numpy as np
 import torch
 
@@ -18,7 +19,8 @@ from modified_DeepHistone_model import DeepHistone
 from modified_DeepHistone_utils import model_train,model_eval,model_predict
 from modified_DeepHistone_utils import get_reshaped_data
 from modified_DeepHistone_utils import get_dict_from_data
-
+from modified_DeepHistone_utils import get_dict_from_data_submisson
+from modified_DeepHistone_utils import create_submission
 
 
 
@@ -74,19 +76,19 @@ submission_genes.head(n=3)
 
 
 # Load train data
-train_dataloader = torch.utils.data.DataLoader(
-    HistoneDataset_returngenenames(train_genes,left_flank_size=left_flank_size,right_flank_size=right_flank_size,bin_size=histone_bin_size,use_seq=True), 
-    shuffle=False, batch_size=n_genes_train)
+# train_dataloader = torch.utils.data.DataLoader(
+#     HistoneDataset_returngenenames(train_genes,left_flank_size=left_flank_size,right_flank_size=right_flank_size,bin_size=histone_bin_size,use_seq=True), 
+#     shuffle=False, batch_size=n_genes_train)
 
-# Load valid data
-valid_dataloader = torch.utils.data.DataLoader(
-    HistoneDataset_returngenenames(valid_genes,left_flank_size=left_flank_size,right_flank_size=right_flank_size,bin_size=histone_bin_size,use_seq=True), 
-    shuffle=False, batch_size=n_genes_valid)
+# # Load valid data
+# valid_dataloader = torch.utils.data.DataLoader(
+#     HistoneDataset_returngenenames(valid_genes,left_flank_size=left_flank_size,right_flank_size=right_flank_size,bin_size=histone_bin_size,use_seq=True), 
+#     shuffle=False, batch_size=n_genes_valid)
 
-# Load test data
-test_dataloader = torch.utils.data.DataLoader(
-    HistoneDataset_returngenenames(test_genes,left_flank_size=left_flank_size,right_flank_size=right_flank_size,bin_size=histone_bin_size,use_seq=True), 
-    shuffle=False, batch_size=n_genes_valid)
+# # Load test data
+# test_dataloader = torch.utils.data.DataLoader(
+#     HistoneDataset_returngenenames(test_genes,left_flank_size=left_flank_size,right_flank_size=right_flank_size,bin_size=histone_bin_size,use_seq=True), 
+#     shuffle=False, batch_size=n_genes_valid)
 
 
 # Load submission data 
@@ -94,38 +96,59 @@ submission_dataloader = torch.utils.data.DataLoader(
     HistoneDataset_returngenenames(submission_genes,left_flank_size=left_flank_size,right_flank_size=right_flank_size,bin_size=histone_bin_size,use_seq=True), 
     shuffle=False, batch_size=n_genes_submission)
 
+print("finish load data")
 
-# Run train loader
-x_train_histone,x_train_seq,y_train,train_index=get_reshaped_data(dataloader=train_dataloader)
+# # Run train loader
+# x_train_histone,x_train_seq,y_train,train_index=get_reshaped_data(dataloader=train_dataloader)
 
-# Run valid loader
-x_valid_histone,x_valid_seq,y_valid,valid_index=get_reshaped_data(dataloader=valid_dataloader)
+# # Run valid loader
+# x_valid_histone,x_valid_seq,y_valid,valid_index=get_reshaped_data(dataloader=valid_dataloader)
 
-# Run test loader
-x_test_histone,x_test_seq,y_test,test_index=get_reshaped_data(dataloader=test_dataloader)
+# # Run test loader
+# x_test_histone,x_test_seq,y_test,test_index=get_reshaped_data(dataloader=test_dataloader)
 
 # Run submission loader
 x_submission_histone,x_submission_seq,submission_index=get_reshaped_data(dataloader=submission_dataloader,is_train=False)
 
+print("finish run  loader")
 
 
-dna_dict= get_dict_from_data(train_index,valid_index,test_index,
-                             x_train_seq,x_valid_seq,x_test_seq)
+# dna_dict= get_dict_from_data(train_index,valid_index,test_index,
+#                              x_train_seq,x_valid_seq,x_test_seq)
 
-histone_dict= get_dict_from_data(train_index,valid_index,test_index,
-                             x_train_histone,x_valid_histone,x_test_histone,)
-gex_dict = get_dict_from_data(train_index,valid_index,test_index,
-                             y_train,y_valid,y_test,)
+# histone_dict= get_dict_from_data(train_index,valid_index,test_index,
+#                              x_train_histone,x_valid_histone,x_test_histone,)
+# gex_dict = get_dict_from_data(train_index,valid_index,test_index,
+#                              y_train,y_valid,y_test,)
+
+
+submission_dna_dict= get_dict_from_data_submisson(submission_index,x_submission_seq)
+
+submission_histone_dict= get_dict_from_data_submisson(submission_index,x_submission_histone,)
+
+
+print("finish get dictionary")
 
 
 
 model = DeepHistone(use_gpu,use_seq=use_seq,bin_list=[seq_bins,histone_bins],inside_ksize=[conv_ksize,tran_ksize])
+model.forward_fn.load_state_dict(torch.load(f"{model_save_folder}{best_model_name}"))
 #model.load_state_dict(torch.load(f"{model_save_folder}{best_model_name}"))
-model.forward_fn.load_state_dict(torch.load(f"{model_save_folder}{best_model_name}",map_location=torch.device('cpu')))
+#model.forward_fn.load_state_dict(torch.load(f"{model_save_folder}{best_model_name}",map_location=torch.device('cpu')))
 
 
-('Begin predicting...')
-test_gex,test_pred = model_predict(test_index,model,batchsize,dna_dict,histone_dict,gex_dict,)	
-test_score = scipy.stats.spearmanr(test_pred , test_gex ).correlation
+# print('Begin predicting...')
+# test_gex,test_pred = model_predict(test_index,model,batchsize,dna_dict,histone_dict,gex_dict,)
+# test_score = scipy.stats.spearmanr(test_pred , test_gex ).correlation
+# print('Spearman Correlation Score: {}'.format(test_score))
 
-print('Spearman Correlation Score: {}'.format(test_score))
+
+print('Begin predicting...')
+submission_pred = model_predict(submission_index,model,batchsize,submission_dna_dict,submission_histone_dict,None,)
+#submission_pred = model_predict(submission_index,model,len(submission_index),submission_dna_dict,submission_histone_dict,None,)
+# here cant predict one run because of mememory issure 
+print(submission_pred.shape)
+
+
+#np.savetxt(f"{model_save_folder}submission_pred.txt",submission_pred, fmt='%.4f', delimiter='\t')
+create_submission(submission_genes,submission_pred.flatten())

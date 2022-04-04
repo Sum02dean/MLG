@@ -1,6 +1,21 @@
 from sklearn.metrics import auc,roc_auc_score,precision_recall_curve
 import numpy as np
+import pandas as pd
 import time
+import os 
+
+
+
+def create_submission(test_genes: pd.DataFrame, pred: np.array) -> None:
+    save_dir = '../data/submissions'
+    file_name = 'gex_predicted.csv'  # DO NOT CHANGE THIS
+    zip_name = "Tao_Fang_Project1.zip"
+    save_path = f'{save_dir}/{zip_name}'
+    compression_options = dict(method="zip", archive_name=file_name)
+
+    test_genes['gex_predicted'] = pred.tolist()
+    print(f'Saving submission to path {os.path.abspath(save_dir)}')
+    test_genes[['gene_name', 'gex_predicted']].to_csv(save_path, compression=compression_options)
 
 
 def get_reshaped_data(dataloader,is_train=True):
@@ -56,6 +71,10 @@ def get_dict_from_data(train_index,valid_index,test_index,train,valid,test):
 
 	return(return_dict)
 
+def get_dict_from_data_submisson(submission_index,submission):
+	return_dict= {submission_index[i]:submission[i,...] for i in range(submission.shape[0])}
+	return(return_dict)
+
 
 def save_model(model,epoch,model_save_folder="../data/DeepHistone/",prefix="",suffix=""):
     time_stamp=time.strftime("%Y%m%d-%H%M%S")
@@ -84,7 +103,7 @@ def loadRegions(regions_indexs,dna_dict,dns_dict,label_dict=None,):
 		label_regions = np.concatenate([label_dict[meta] for meta in regions_indexs],axis=0) #.astype(int) ; here our output is regression value 
 		return dna_regions,dns_regions,label_regions
 	else:
-		return dna_regions,dns_regions,label_regions
+		return dna_regions,dns_regions
  	
 def model_train(regions,model,batchsize,dna_dict,dns_dict,label_dict,):
 	train_loss = []
