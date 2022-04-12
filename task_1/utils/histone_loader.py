@@ -2,11 +2,11 @@ import os.path
 
 import pyBigWig
 
-HISTONE_MODS: list[str] = ['DNase', 'H3K4me1', 'H3K4me3', 'H3K9me3', 'H3K27ac', 'H3K27me3', 'H3K36me3']
+HISTONE_MODS = ['DNase', 'H3K4me1', 'H3K4me3', 'H3K9me3', 'H3K27ac', 'H3K27me3', 'H3K36me3']
 VALUE_TYPES = ['mean', 'max', 'min', 'coverage', 'std']
 
 
-def str_to_idx(histone_mods: list[str]) -> list[int]:
+def str_to_idx(histone_mods: list) -> list:
     assert all(histone in HISTONE_MODS for histone in histone_mods)
     return [i for i, histone in enumerate(HISTONE_MODS) if histone in histone_mods]
 
@@ -25,7 +25,7 @@ def get_histone_file(histone: str, cell_line: int) -> str:
 
 
 def get_bw_data(cell_line: int, chr: int, start: int, stop: int, value_type: str = 'mean', histones=None,
-                n_bins: int = 20) -> list[list[float]]:
+                n_bins: int = 20) -> list:
     """
     Get values from given histone marks for bigwig files.
 

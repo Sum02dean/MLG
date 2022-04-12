@@ -23,8 +23,7 @@ def to_pandas(x):
     return pd.DataFrame(x.numpy())
 
 # Get genes
-train_genes, _ = chromosome_splits(cell_line=1, test_size=0.1)
-_, test_genes = chromosome_splits(cell_line=2, test_size=0.1)
+train_genes, test_genes = chromosome_splits(cell_line=1, test_size=0.1)
 all_genes = pd.concat([train_genes, test_genes])
 
 # Get sumbission X data

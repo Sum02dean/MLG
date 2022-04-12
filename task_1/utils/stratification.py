@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import GroupShuffleSplit
 from sklearn.model_selection import train_test_split
-from utils.data_loader import load_train_genes
+from data_loader import load_train_genes
 
 
 def random_splits(test_size=0.3):
@@ -77,7 +77,7 @@ def chromosome_splits(cell_line=None, test_size=0.3, train_cell_line: int = None
         groups = np.array(df.chr)
 
     # Collect disjoint sets
-    gss = GroupShuffleSplit(n_splits=1, train_size=1 - test_size, random_state=42)
+    gss = GroupShuffleSplit(n_splits=5, train_size=1 - test_size, random_state=42)
 
     # Get indices
     (train_idx, test_idx) = next(gss.split(X=df, y=None, groups=groups))

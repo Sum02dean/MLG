@@ -79,7 +79,7 @@ def get_train_chr() -> list:
     return list(set(load_train_genes().chr))
 
 
-def filter_genes_by_chr(genes: pd.DataFrame, chromosomes: list[int]) -> pd.DataFrame:
+def filter_genes_by_chr(genes: pd.DataFrame, chromosomes: list) -> pd.DataFrame:
     """
     Filter genes by chromosome number. Intended for use during cross validation.
 

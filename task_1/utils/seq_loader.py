@@ -46,7 +46,7 @@ def get_sequence(chromosome_nr: int, start: int, stop: int, is_reverse: bool) ->
     return seq
 
 
-def encode_seq(seq: str) -> list[list[int]]:
+def encode_seq(seq: str) -> list:
     """
     Converts given input sequence into a one-hot encoded array.
     'N' is represented as all zeros.
@@ -57,7 +57,7 @@ def encode_seq(seq: str) -> list[list[int]]:
     return [SEQ_TO_ONEHOT[nucleotide] for nucleotide in seq]
 
 
-def get_encoded_sequence(chromosome_nr: int, start: int, stop: int, is_reverse: bool) -> list[list[int]]:
+def get_encoded_sequence(chromosome_nr: int, start: int, stop: int, is_reverse: bool) -> list:
     """
     Returns one-hot encoded sequence in given chromosome with positions [start, stop].
 

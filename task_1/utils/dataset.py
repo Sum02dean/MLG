@@ -6,10 +6,10 @@ import torch
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
-from utils.data_loader import load_all_genes
-from utils.histone_loader import HISTONE_MODS, get_bw_data, str_to_idx
-from utils.stratification import chromosome_splits
-from utils.seq_loader import get_encoded_sequence
+from data_loader import load_all_genes
+from histone_loader import HISTONE_MODS, get_bw_data, str_to_idx
+from stratification import chromosome_splits
+from seq_loader import get_encoded_sequence
 
 
 def get_gene_unique(gene: pd.Series) -> str:
@@ -78,7 +78,7 @@ def get_seq_data(left_flank_size: int, right_flank_size: int) -> pd.DataFrame:
     return pd.DataFrame.from_dict(data_per_gene)
 
 
-def list_2d_to_np(l: list[list]) -> np.ndarray:
+def list_2d_to_np(l: list) -> np.ndarray:
     return np.array([np.array(e) for e in l])
 
 
@@ -87,7 +87,7 @@ class HistoneDataset(Dataset):
     def __init__(self,
                  genes: pd.DataFrame,
                  use_seq: bool = False,
-                 histone_mods: list[str] = None,
+                 histone_mods: list = None,
                  left_flank_size: int = 1000,
                  right_flank_size: int = 1000,
                  bin_size: int = 100,
@@ -132,7 +132,7 @@ class HistoneDataset(Dataset):
         return features, gene.gex
 
     @staticmethod
-    def load_histone_data(histone_mods: list[str], left_flank_size: int, right_flank_size: int, n_bins: int,
+    def load_histone_data(histone_mods: list, left_flank_size: int, right_flank_size: int, n_bins: int,
                           bin_value_type: str):
         histone_file = get_histone_filename(left_flank_size, right_flank_size, n_bins, bin_value_type)
         if not os.path.exists(histone_file):
