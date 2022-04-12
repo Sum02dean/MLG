@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import pandas as pd
 
 TRAIN_INFO = {1: ['X1_train_info', 'X1_val_info'],
@@ -58,7 +59,9 @@ def load_test_genes() -> pd.DataFrame:
 
     :return: DataFrame of gene info for cell line 3
     """
-    return load_info('X3_test_info')
+    test_genes = load_info('X3_test_info')
+    test_genes['cell_line'] = 3
+    return test_genes
 
 
 def load_all_genes() -> pd.DataFrame:
@@ -69,7 +72,6 @@ def load_all_genes() -> pd.DataFrame:
     """
     train_genes = load_train_genes().drop(columns='gex')
     test_genes = load_test_genes()
-    test_genes['cell_line'] = 3
     return pd.concat([train_genes, test_genes])
 
 
@@ -86,6 +88,18 @@ def filter_genes_by_chr(genes: pd.DataFrame, chromosomes: list[int]) -> pd.DataF
     :return: genes from specified chromosomes as a DataFrame
     """
     return genes[genes.chr.isin(chromosomes)]
+
+
+def create_submission(test_genes: pd.DataFrame, pred: np.array) -> None:
+    save_dir = '../data/submissions'
+    file_name = 'gex_predicted.csv'  # DO NOT CHANGE THIS
+    zip_name = "Kasak_Liine_Project1.zip"
+    save_path = f'{save_dir}/{zip_name}'
+    compression_options = dict(method="zip", archive_name=file_name)
+
+    test_genes['gex_predicted'] = pred.flatten().tolist()
+    print(f'Saving submission to path {os.path.abspath(save_dir)}')
+    test_genes[['gene_name', 'gex_predicted']].to_csv(save_path, compression=compression_options)
 
 
 if __name__ == '__main__':

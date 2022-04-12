@@ -6,10 +6,10 @@ import torch
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
-from data_loader import load_all_genes
-from histone_loader import HISTONE_MODS, get_bw_data, str_to_idx
-from stratification import chromosome_splits
-from seq_loader import get_encoded_sequence
+from utils.data_loader import load_all_genes
+from utils.histone_loader import HISTONE_MODS, get_bw_data, str_to_idx
+from utils.stratification import chromosome_splits
+from utils.seq_loader import get_encoded_sequence
 
 
 def get_gene_unique(gene: pd.Series) -> str:
