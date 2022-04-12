@@ -128,7 +128,7 @@ class HistoneDataset(Dataset):
             # seq data shape: (batch_size, left_flank + right flank, 4)
             features = features, list_2d_to_np(self.sequences[get_gene_unique(gene)])
         if 'gex' not in gene:
-            return features
+            return features, gene.gene_name
         return features, gene.gex
 
     @staticmethod

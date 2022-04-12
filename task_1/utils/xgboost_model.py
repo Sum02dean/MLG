@@ -1,4 +1,5 @@
 
+from unicodedata import name
 import numpy as np
 import xgboost as xgb
 import scipy
@@ -25,7 +26,9 @@ def to_pandas(x):
 # Get genes
 train_genes, _ = chromosome_splits(cell_line=1, test_size=0.1)
 _, test_genes = chromosome_splits(cell_line=2, test_size=0.1)
-all_genes = pd.concat([train_genes, test_genes])
+all_genes = load_train_genes()
+all_genes = filter_genes_by_chr(all_genes, get_train_chr())
+# all_genes = pd.concat([train_genes, test_genes])
 
 # Get sumbission X data
 total_genes = load_all_genes()
@@ -70,9 +73,12 @@ n_genes_all, _, _ = x_all.shape
 x_all = x_all.reshape(n_genes_all, n_features * n_bins)
 
 # Run X3 loader
-(X3_test) = next(iter(X3_dataloader))
+(X3_test, gene_name) = next(iter(X3_dataloader))
 n_genes_X3, _, _ = X3_test.shape
 X3_test = X3_test.reshape(n_genes_X3, n_features * n_bins)
+names = pd.DataFrame({'gene_name':gene_name})
+names.to_csv('X3_gene_name.csv')
+print(names)
 
 # Save csv
 if SAVE_DATA:
